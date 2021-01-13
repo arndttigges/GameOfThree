@@ -1,6 +1,7 @@
 package com.takeaway.game.controller;
 
 import com.takeaway.game.dto.GameTemplate;
+import com.takeaway.game.model.Game;
 import com.takeaway.game.service.GameService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,7 @@ public class GameController {
 
     @GetMapping("/")
     String getStartPage(Model model) {
+        model.addAttribute("gameTemplate", new GameTemplate());
         model.addAttribute("games", gameService.getAllRunningGames());
         return "main";
     }
@@ -31,9 +33,10 @@ public class GameController {
                         final Model model ) {
 
         if (!bindingResult.hasErrors()) {
-           gameService.createNewGame(gameTemplate);
+           Game createdGame = gameService.createNewGame(gameTemplate);
         }
 
+        model.addAttribute("games", gameService.getAllRunningGames());
         return "main";
     }
 

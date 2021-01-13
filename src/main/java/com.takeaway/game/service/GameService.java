@@ -2,7 +2,9 @@ package com.takeaway.game.service;
 
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.dto.GameView;
+import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Movement;
+import com.takeaway.game.model.Player;
 import com.takeaway.game.repository.GameRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,8 +33,20 @@ public class GameService {
                 .collect(Collectors.toList());
     }
 
-    public void createNewGame(GameTemplate gameTemplate) {
+    public Game createNewGame(GameTemplate gameTemplate) {
+        Player opponent = Player.builder()
+                .address(gameTemplate.getAddress())
+                .build();
+        Movement startMove = Movement.builder()
+                .movementSequenzNumber(1)
+                .number(gameTemplate.getStartValue())
+                .build();
 
+        Game newGame = Game.builder()
+                .opponent(opponent)
+                .movements(List.of(startMove))
+                .build();
 
+        return repository.save(newGame);
     }
 }
