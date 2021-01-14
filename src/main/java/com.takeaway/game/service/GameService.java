@@ -1,9 +1,7 @@
 package com.takeaway.game.service;
 
-import com.takeaway.game.dto.DetailedGame;
-import com.takeaway.game.dto.GameTemplate;
-import com.takeaway.game.dto.GameView;
-import com.takeaway.game.dto.Move;
+import com.takeaway.game.dto.*;
+import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Movement;
 import com.takeaway.game.model.Player;
@@ -27,7 +25,6 @@ public class GameService {
                 .stream()
                 .map(game -> {
                     Movement lastMove = game.getMovements().get(game.getMovements().size() - 1);
-                    System.out.println(game.getId());
                     return GameView.builder()
                             .uuid(game.getId())
                             .opponentAddress(game.getOpponent().getAddress())
@@ -39,39 +36,49 @@ public class GameService {
                 .collect(Collectors.toList());
     }
 
-    public DetailedGame fetchGame(UUID gameID) {
-        Optional<Game> gameOptional = repository.findById(gameID);
+    public DetailedGame fetchGame(UUID gameId) {
+        Optional<Game> gameOptional = repository.findById(gameId);
+        return gameOptional.map(this::convertGame).orElse(null);
+    }
 
-        if(gameOptional.isPresent()) {
+    public DetailedGame performMove(UUID gameId, GameMove action) {
+        Optional<Game> gameOptional = repository.findById(gameId);
+        if( gameOptional.isPresent() ) {
             Game game = gameOptional.get();
 
-            List<Move> moves = game.getMovements()
-                    .stream()
-                    .map(movement -> Move.builder()
-                            .sequenceNumber(movement.getMovementSequenzNumber())
-                            .number(movement.getNumber())
-                            .myAction(movement.getAction())
-                            .build())
-                    .collect(Collectors.toList());
-
-
-            return DetailedGame.builder().uuid(game.getId()).movements(moves).build();
         }
-        return null;
+
+        return fetchGame(gameId);
+    }
+
+    private DetailedGame convertGame(Game game) {
+        List<Move> moves = game.getMovements()
+                .stream()
+                .map(movement -> Move.builder()
+                        .sequenceNumber(movement.getMovementSequenzNumber())
+                        .number(movement.getNumber())
+                        .myAction(movement.getAction())
+                        .build())
+                .collect(Collectors.toList());
+
+        return DetailedGame.builder().uuid(game.getId()).movements(moves).build();
     }
 
     public Game createNewGame(GameTemplate gameTemplate) {
-        Player opponent = Player.builder()
+        Player player = Player.builder()
+                .id(gameTemplate.getPlayerId())
                 .address(gameTemplate.getAddress())
                 .build();
+
         Movement startMove = Movement.builder()
                 .movementSequenzNumber(1)
                 .number(gameTemplate.getStartValue())
+                .player(player)
                 .build();
 
         Game newGame = Game.builder()
                 .id(UUID.randomUUID())
-                .opponent(opponent)
+                .opponent(player)
                 .movements(List.of(startMove))
                 .build();
 

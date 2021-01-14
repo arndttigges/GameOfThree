@@ -16,6 +16,8 @@ import javax.validation.constraints.NotBlank;
 public class GameTemplate {
 
     @NotBlank
+    private String playerId;
+    //@NotBlank
     private String address = "xxx";
 
     @Min(1)

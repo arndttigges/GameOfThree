@@ -12,4 +12,5 @@ import lombok.Setter;
 @Getter
 public class GameMove {
     private Action move;
+    private String playerId;
 }

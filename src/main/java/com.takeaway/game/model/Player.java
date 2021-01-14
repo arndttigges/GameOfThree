@@ -21,8 +21,7 @@ import static javax.persistence.CascadeType.ALL;
 public class Player implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
+    private String id;
 
     private String address;
 
