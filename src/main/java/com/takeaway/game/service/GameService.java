@@ -6,6 +6,7 @@ import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Movement;
 import com.takeaway.game.model.Player;
 import com.takeaway.game.repository.GameRepository;
+import com.takeaway.game.rule.Rule;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 public class GameService {
 
     private final GameRepository repository;
+    private final Rule rule;
 
     public List<GameView> getAllRunningGames() {
         return repository.findAll()
@@ -45,7 +47,9 @@ public class GameService {
         Optional<Game> gameOptional = repository.findById(gameId);
         if( gameOptional.isPresent() ) {
             Game game = gameOptional.get();
-
+            Movement move = rule.apply(game,action);
+            game.getMovements().add(move);
+            return convertGame(repository.save(game));
         }
 
         return fetchGame(gameId);
@@ -81,7 +85,7 @@ public class GameService {
                 .opponent(player)
                 .movements(List.of(startMove))
                 .build();
-
-        return repository.save(newGame);
+        Game game = repository.save(newGame);
+        return game;
     }
 }
