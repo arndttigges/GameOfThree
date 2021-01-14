@@ -9,6 +9,7 @@ import java.util.*;
 @Getter
 public class DetailedGame {
 
-    List<Move> movements;
+    private final UUID uuid;
+    private final List<Move> movements;
 
 }

@@ -55,7 +55,7 @@ public class GameService {
                     .collect(Collectors.toList());
 
 
-            return DetailedGame.builder().movements(moves).build();
+            return DetailedGame.builder().uuid(game.getId()).movements(moves).build();
         }
         return null;
     }

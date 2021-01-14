@@ -16,18 +16,24 @@
     <div class="container-md">
         <h1>Game Of Three - Movements</h1>
 
-        <div class="container px-4">
-            <div class="row gx-5">
-                <div class="col">
-                    <div class="p-3 border bg-light">current State: Waiting</div>
-                </div>
-                <div class="col">
-                    <div class="p-3 border bg-light">Game: dsfsdf</div>
+        <div class="form-group">
+        <div class="row">
+            <div class="container px-4">
+                <div class="row gx-5">
+                    <div class="col">
+                        <div class="p-3 border bg-light">current State: Waiting</div>
+                    </div>
+                    <div class="col">
+                        <div class="p-3 border bg-light">Game: dsfsdf</div>
+                    </div>
                 </div>
             </div>
         </div>
+        </div>
 
+        <div class="form-group">
         <div class="row">
+            <div class="container px-4">
             <table class="table table-hover table-striped" id="table">
                 <thead>
                 <tr>
@@ -50,17 +56,23 @@
 
             </table>
         </div>
+        </div>
+        </div>
 
-        <div class="container-md">
-            <form action="#" th:action="@{/game/game.id}" th:object="${gameMove}" method="post">
-                <div th:each="action : ${T(com.takeaway.game.model.Action).values()}">
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="radio" th:field="*{move}" th:value="${action}">
-                        <label class="form-check-label"th:for="${#ids.prev('move')}" th:text="${action.value}">model</label>
+        <div class="form-group">
+        <div class="row">
+            <div class="container-md">
+                <form action="#" th:action="@{/game/__${game.uuid}__}" th:object="${gameMove}" method="post">
+                    <div th:each="action : ${T(com.takeaway.game.model.Action).values()}">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" th:field="*{move}" th:value="${action}">
+                            <label class="form-check-label"th:for="${#ids.prev('move')}" th:text="${action.value}">model</label>
+                        </div>
                     </div>
-                </div>
-                <button type="submit" class="btn btn-primary">Submit</button>
-            </form>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
         </div>
 
 
