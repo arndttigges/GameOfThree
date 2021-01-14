@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Of Three</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="main.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+</head>
+<body>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
+
+<div class="container-fluid">
+    <div class="container-md">
+        <h1>Game Of Three - Movements</h1>
+
+        <div class="container px-4">
+            <div class="row gx-5">
+                <div class="col">
+                    <div class="p-3 border bg-light">current State: Waiting</div>
+                </div>
+                <div class="col">
+                    <div class="p-3 border bg-light">Game: dsfsdf</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <table class="table table-hover table-striped" id="table">
+                <thead>
+                <tr>
+                    <th scope="col">Sequence</th>
+                    <th scope="col">You</th>
+                    <th scope="col">New Value</th>
+                    <th scope="col">Opponent</th>
+                </tr>
+                </thead>
+                <tbody>
+                <th:block th:each="movement : ${game.movements}">
+                    <tr>
+                        <td th:text="${movement.sequenceNumber}">...</td>
+                        <td th:text="${movement.myAction}">...</td>
+                        <td th:text="${movement.number}">...</td>
+                        <td th:text="${movement.opponentAction}">...</td>
+                    </tr>
+                </th:block>
+                </tbody>
+
+            </table>
+        </div>
+
+        <div class="container-md">
+            <form action="#" th:action="@{/game/game.id}" th:object="${gameMove}" method="post">
+                <div th:each="action : ${T(com.takeaway.game.model.Action).values()}">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="radio" th:field="*{move}" th:value="${action}">
+                        <label class="form-check-label"th:for="${#ids.prev('move')}" th:text="${action.value}">model</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+
+
+        <a class="btn btn-outline-info" href="/" role="button">back</a>
+    </div>
+</div>
+
+</body>
+</html>

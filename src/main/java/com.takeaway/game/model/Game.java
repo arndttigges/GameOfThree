@@ -21,8 +21,7 @@ import static javax.persistence.CascadeType.ALL;
 public class Game implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
+    UUID id;
 
     @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)
     List<Movement> movements;

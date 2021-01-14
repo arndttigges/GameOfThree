@@ -23,15 +23,19 @@
                     <th scope="col">Sequencenumber</th>
                     <th scope="col">Value</th>
                     <th scope="col">Last Step</th>
+                    <th scope="col"></th>
                 </tr>
                 </thead>
                 <tbody>
                 <th:block th:each="game : ${games}">
                     <tr>
+
                         <td th:text="${game.opponentAddress}">...</td>
                         <td th:text="${game.sequenceNumber}">...</td>
                         <td th:text="${game.number}">...</td>
                         <td th:text="${game.lastStep}">...</td>
+                        <td> <a th:href="${'/game/' + game.uuid}"/>Play</a></td>
+
                     </tr>
                 </th:block>
                 </tbody>
@@ -43,14 +47,14 @@
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label>Start Value</label>
-                    <input type="text" pattern="^\d+$" class="form-control" th:field="*{startValue}"  th:errorclass="is-invalid" placeholder="42" title="Field value has to be a number">
+                    <input type="text" pattern="^\d+$" class="form-control" th:field="*{startValue}"  th:errorclass="is-invalid" title="Field value has to be a number">
                     <small th:errors="*{startValue}" id="startValueHelpBlock" class="form-text text-muted">
                         Start Value for the Game
                     </small>
                 </div>
                 <div class="form-group col-md-3">
                     <label for="address">Address</label>
-                    <input type="text" class="form-control" th:field="*{address}" th:errorclass="is-invalid" id="address" placeholder="">
+                    <input type="text" class="form-control" th:field="*{address}" th:errorclass="is-invalid" id="address">
                     <small th:errors="*{address}"id="addressHelpBlock" class="form-text text-muted">
                         Address for the opponent, empty for Bot
                     </small>

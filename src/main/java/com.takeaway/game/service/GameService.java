@@ -1,7 +1,9 @@
 package com.takeaway.game.service;
 
+import com.takeaway.game.dto.DetailedGame;
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.dto.GameView;
+import com.takeaway.game.dto.Move;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Movement;
 import com.takeaway.game.model.Player;
@@ -10,6 +12,8 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,7 +27,9 @@ public class GameService {
                 .stream()
                 .map(game -> {
                     Movement lastMove = game.getMovements().get(game.getMovements().size() - 1);
+                    System.out.println(game.getId());
                     return GameView.builder()
+                            .uuid(game.getId())
                             .opponentAddress(game.getOpponent().getAddress())
                             .lastStep(lastMove.getAction())
                             .sequenceNumber(lastMove.getMovementSequenzNumber())
@@ -31,6 +37,27 @@ public class GameService {
                             .build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    public DetailedGame fetchGame(UUID gameID) {
+        Optional<Game> gameOptional = repository.findById(gameID);
+
+        if(gameOptional.isPresent()) {
+            Game game = gameOptional.get();
+
+            List<Move> moves = game.getMovements()
+                    .stream()
+                    .map(movement -> Move.builder()
+                            .sequenceNumber(movement.getMovementSequenzNumber())
+                            .number(movement.getNumber())
+                            .myAction(movement.getAction())
+                            .build())
+                    .collect(Collectors.toList());
+
+
+            return DetailedGame.builder().movements(moves).build();
+        }
+        return null;
     }
 
     public Game createNewGame(GameTemplate gameTemplate) {
@@ -43,6 +70,7 @@ public class GameService {
                 .build();
 
         Game newGame = Game.builder()
+                .id(UUID.randomUUID())
                 .opponent(opponent)
                 .movements(List.of(startMove))
                 .build();

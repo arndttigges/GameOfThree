@@ -16,10 +16,10 @@ import javax.validation.constraints.NotBlank;
 public class GameTemplate {
 
     @NotBlank
-    private String address;
+    private String address = "xxx";
 
     @Min(1)
     @Max(Integer.MAX_VALUE)
-    private int startValue;
+    private int startValue = 42;
 
 }
