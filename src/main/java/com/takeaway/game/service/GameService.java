@@ -1,10 +1,7 @@
 package com.takeaway.game.service;
 
 import com.takeaway.game.dto.*;
-import com.takeaway.game.model.Action;
-import com.takeaway.game.model.Game;
-import com.takeaway.game.model.Movement;
-import com.takeaway.game.model.Player;
+import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.Rule;
 import lombok.AllArgsConstructor;
@@ -49,6 +46,7 @@ public class GameService {
             Game game = gameOptional.get();
             Movement move = rule.apply(game,action);
             game.getMovements().add(move);
+            game.setStatus(GameStatus.WAITING);
             return convertGame(repository.save(game));
         }
 
@@ -65,7 +63,7 @@ public class GameService {
                         .build())
                 .collect(Collectors.toList());
 
-        return DetailedGame.builder().uuid(game.getId()).movements(moves).build();
+        return DetailedGame.builder().uuid(game.getId()).status(game.getStatus()).movements(moves).build();
     }
 
     public Game createNewGame(GameTemplate gameTemplate) {
@@ -82,6 +80,7 @@ public class GameService {
 
         Game newGame = Game.builder()
                 .id(UUID.randomUUID())
+                .status(GameStatus.READY)
                 .opponent(player)
                 .movements(List.of(startMove))
                 .build();

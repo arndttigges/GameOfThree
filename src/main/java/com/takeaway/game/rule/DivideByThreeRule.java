@@ -1,6 +1,7 @@
 package com.takeaway.game.rule;
 
 import com.takeaway.game.dto.GameMove;
+import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Movement;
 import com.takeaway.game.model.Player;
@@ -10,7 +11,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class DivideByThreeRule implements Rule{
 
-    @Override
+
     public Movement apply(Game game, GameMove move) {
         Movement lastMovement = getLastMovement(game);
         Player player = game.getOpponent();
@@ -29,5 +30,18 @@ public class DivideByThreeRule implements Rule{
     private Movement getLastMovement(Game game) {
         int lastElementIndex = game.getMovements().size() - 1;
         return game.getMovements().get(lastElementIndex);
+    }
+
+    @Override
+    public Boolean isAllowedMove(Game game, GameMove move) {
+        boolean isDifferentUser = game.getOpponent().toString().equals(move.getPlayerId());
+        boolean valueIsHighEnough = getLastMovement(game).getNumber() > 1;
+
+        return isDifferentUser && valueIsHighEnough;
+    }
+
+    @Override
+    public int calcNewValue(int oldValue, Action action) {
+        return (oldValue + action.getValue()) / 3;
     }
 }

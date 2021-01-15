@@ -23,6 +23,8 @@ public class Game implements Serializable {
     @Id
     UUID id;
 
+    GameStatus status;
+
     @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)
     List<Movement> movements;
 
