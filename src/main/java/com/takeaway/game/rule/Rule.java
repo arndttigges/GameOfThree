@@ -7,7 +7,7 @@ import com.takeaway.game.model.Movement;
 
 public interface Rule {
 
-    Boolean isAllowedMove(Game game, GameMove move);
+    boolean isAllowedMove(Game game, GameMove move);
     int calcNewValue(int oldValue, Action action);
 
 }

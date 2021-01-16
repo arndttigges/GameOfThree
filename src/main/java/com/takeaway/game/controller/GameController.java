@@ -56,11 +56,20 @@ public class GameController {
 
     @PostMapping("/game/{gameId}")
     String play(@PathVariable(name = "gameId") UUID gameId,
-                @ModelAttribute GameMove gameMove,
+                @ModelAttribute @Valid GameMove gameMove,
+                final BindingResult bindingResult,
+                final HttpSession session,
                 final Model model) {
 
-        model.addAttribute("game", gameService.performMove(gameId, gameMove));
-        model.addAttribute("gameMove", new GameMove());
+        if(bindingResult.hasErrors()) {
+            model.addAttribute("game", gameService.fetchGame(gameId));
+            model.addAttribute("playerId", session.getId());
+        } else {
+            model.addAttribute("game", gameService.performMove(gameId, gameMove));
+            model.addAttribute("playerId", session.getId());
+            model.addAttribute("gameMove", new GameMove());
+        }
+
         return "game";
     }
 

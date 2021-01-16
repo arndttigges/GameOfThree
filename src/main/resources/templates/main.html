@@ -23,6 +23,7 @@
                     <th scope="col">Sequencenumber</th>
                     <th scope="col">Value</th>
                     <th scope="col">Last Step</th>
+                    <th scope="col">Status</th>
                     <th scope="col"></th>
                 </tr>
                 </thead>
@@ -30,10 +31,11 @@
                 <th:block th:each="game : ${games}">
                     <tr>
 
-                        <td th:text="${game.opponentAddress}">...</td>
+                        <td th:text="${game.opponent}">...</td>
                         <td th:text="${game.sequenceNumber}">...</td>
                         <td th:text="${game.number}">...</td>
                         <td th:text="${game.lastStep}">...</td>
+                        <td th:text="${game.status}">...</td>
                         <td> <a th:href="${'/game/' + game.uuid}"/>Play</a></td>
 
                     </tr>
