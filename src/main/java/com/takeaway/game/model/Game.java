@@ -29,5 +29,6 @@ public class Game implements Serializable {
     @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)
     List<Movement> movements;
 
+    @ManyToOne(targetEntity=Player.class, cascade = ALL,fetch=FetchType.LAZY)
     Player opponent;
 }

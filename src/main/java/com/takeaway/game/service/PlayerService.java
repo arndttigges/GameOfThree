@@ -29,7 +29,17 @@ public class PlayerService {
         kafkaService.sendAnnouncement(announcement);
     }
 
+    public Optional<Player> findPlayerById(String id) {
+        return playerRepository.findById(id);
+    }
 
+    public Player createPlayer(String playerId, String name) {
+        Player player = Player.builder()
+                .id(playerId)
+                .name(name)
+                .build();
+        return playerRepository.save(player);
+    }
 
     private String getSessionID() {
         return RequestContextHolder.currentRequestAttributes().getSessionId();

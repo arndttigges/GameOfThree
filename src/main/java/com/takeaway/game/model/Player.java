@@ -22,7 +22,7 @@ public class Player implements Serializable {
 
     @Id
     private String id;
-
+    @Lob
     private String name;
 
     @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)

@@ -34,13 +34,15 @@
                     <tbody>
                     <th:block th:each="player : ${players}">
                         <tr>
-                            <form action="#" th:action="@{/game/remote/new}" th:object="${gameTemplate}" method="post">
-                            <td th:text="${player.name}">...</td>
-                            <td>
-                                <input type="text" pattern="^\d+$" class="form-control" th:field="*{startValue}"  th:errorclass="is-invalid" title="Field value has to be a number">
-                            </td>
-                            <td><button type="submit" class="btn btn-primary">Invite</button></td>
-
+                            <form th:action="@{/game/remote/new}" th:object="${newRemoteGame}" method="post">
+                                <td th:text="${player.name}">...</td>
+                                <td>
+                                    <input type="text" pattern="^\d+$" class="form-control" th:field="*{startValue}">
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-primary">Invite</button>
+                                </td>
+                                <input type="hidden" th:value="${player.name}" name="remotePlayer" />
                             </form>
                         </tr>
                     </th:block>
@@ -82,7 +84,7 @@
             </table>
         </div>
 
-        <form action="#" th:action="@{/game/new}" th:object="${gameTemplate}" method="post">
+        <form th:action="@{/game/new}" th:object="${gameTemplate}" method="post">
             <div class="form-row">
                 <div class="form-group col-md-3">
                     <label>Start Value</label>

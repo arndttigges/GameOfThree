@@ -2,6 +2,7 @@ package com.takeaway.game.controller;
 
 import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.dto.GameTemplate;
+import com.takeaway.game.dto.NewRemoteGame;
 import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.model.Game;
@@ -15,9 +16,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 
 @Controller
@@ -29,11 +32,8 @@ public class GameController {
     private final KafkaService kafkaService;
 
     @GetMapping("/")
-    String getStartPage(Model model, HttpSession session) {
-        model.addAttribute("gameTemplate", new GameTemplate());
-        model.addAttribute("playerId", session.getId());
-        model.addAttribute("games", gameService.getAllRunningGames());
-        model.addAttribute("players", playerService.getAllInvites());
+    String getStartPage(Model model) {
+        model.addAllAttributes(modelAttributesForMainPage());
         return "main";
     }
 
@@ -43,26 +43,33 @@ public class GameController {
                         final Model model) {
 
         if (!bindingResult.hasErrors()) {
-            Game createdGame = gameService.createNewGame(gameTemplate);
+            Game createdGame = gameService.createNewLocalGame(gameTemplate);
             Announcement announcement = new Announcement(gameTemplate.getPlayerId(), gameTemplate.getName());
             kafkaService.sendAnnouncement(announcement);
+            model.addAttribute("gameTemplate", gameTemplate);
         }
-
-        model.addAttribute("games", gameService.getAllRunningGames());
-        model.addAttribute("players", playerService.getAllInvites());
+        model.addAllAttributes(modelAttributesForMainPage());
         return "main";
     }
 
     @GetMapping("/game/remote")
-    String startNewGame(final HttpSession session,
-                        final Model model) {
+    String announceAvailability(final HttpSession session,
+                                final Model model) {
 
         playerService.createReadyToPlayAnnouncement(session.getId());
+        model.addAllAttributes(modelAttributesForMainPage());
+        return "main";
+    }
 
-        model.addAttribute("gameTemplate", new GameTemplate());
-        model.addAttribute("playerId", session.getId());
-        model.addAttribute("games", gameService.getAllRunningGames());
-        model.addAttribute("players", playerService.getAllInvites());
+    @PostMapping("/game/remote/new")
+    String announceAvailability(@ModelAttribute @Valid NewRemoteGame newRemoteGame,
+                                final BindingResult bindingResult,
+                                final Model model) {
+
+        if (!bindingResult.hasErrors()) {
+            gameService.createNewRemoteGame(newRemoteGame);
+        }
+        model.addAllAttributes(modelAttributesForMainPage());
         return "main";
     }
 
@@ -76,6 +83,7 @@ public class GameController {
         return "game";
     }
 
+
     @PostMapping("/game/{gameId}")
     String play(@PathVariable(name = "gameId") UUID gameId,
                 @ModelAttribute @Valid GameMove gameMove,
@@ -83,7 +91,7 @@ public class GameController {
                 final HttpSession session,
                 final Model model) {
 
-        if(bindingResult.hasErrors()) {
+        if (bindingResult.hasErrors()) {
             model.addAttribute("game", gameService.fetchGame(gameId));
             model.addAttribute("playerId", session.getId());
         } else {
@@ -95,5 +103,14 @@ public class GameController {
         return "game";
     }
 
+    private Map<String, Object> modelAttributesForMainPage() {
+        return Map.of(
+                "playerId", RequestContextHolder.currentRequestAttributes().getSessionId(),
+                "gameTemplate", new GameTemplate(),
+                "newRemoteGame", new NewRemoteGame(),
+                "games", gameService.getAllRunningGames(),
+                "players", playerService.getAllInvites()
+        );
+    }
 
 }

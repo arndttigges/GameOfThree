@@ -14,6 +14,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.util.UUID;
+
 @Service
 @AllArgsConstructor
 public class KafkaService {
@@ -45,6 +47,11 @@ public class KafkaService {
                     .build();
             playerRepository.save(player);
         }
+    }
+
+    public void sendInvite(UUID id, String playerId, String name, int startValue) {
+        Invite invite = new Invite(id, playerId, name, startValue);
+        inviteKafkaTemplate.send(INVITE_GAME_TOPIC, invite);
     }
 
     @SneakyThrows

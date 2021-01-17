@@ -1,10 +1,12 @@
 package com.takeaway.game.service;
 
 import com.takeaway.game.dto.*;
+import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.RuleEngine;
 import lombok.AllArgsConstructor;
+import org.apache.kafka.common.network.Mode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -15,11 +17,13 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class GameService {
 
-    private final GameRepository repository;
+    private final GameRepository gameRepository;
+    private final PlayerService playerService;
+    private final KafkaService kafkaService;
     private final RuleEngine ruleEngine;
 
     public List<GameView> getAllRunningGames() {
-        return repository.findAll()
+        return gameRepository.findAll()
                 .stream()
                 .map(game -> {
                     Movement lastMove = game.getMovements().get(game.getMovements().size() - 1);
@@ -36,12 +40,12 @@ public class GameService {
     }
 
     public DetailedGame fetchGame(UUID gameId) {
-        Optional<Game> gameOptional = repository.findById(gameId);
+        Optional<Game> gameOptional = gameRepository.findById(gameId);
         return gameOptional.map(this::convertGame).orElse(null);
     }
 
     public DetailedGame performMove(UUID gameId, GameMove action) {
-        Game currentGame = repository.findById(gameId).orElseThrow();
+        Game currentGame = gameRepository.findById(gameId).orElseThrow();
         return performMove(currentGame, action);
     }
 
@@ -80,24 +84,12 @@ public class GameService {
         return DetailedGame.builder().uuid(game.getId()).status(game.getStatus()).movements(moves).build();
     }
 
-    public Game createNewGame(GameTemplate gameTemplate) {
-        Player player = Player.builder()
-                .id(gameTemplate.getPlayerId())
-                .name(gameTemplate.getName())
-                .build();
+    public Game createNewLocalGame(GameTemplate gameTemplate) {
 
-        Movement startMove = Movement.builder()
-                .movementSequenzNumber(1)
-                .number(gameTemplate.getStartValue())
-                .player(player)
-                .build();
+        Player player = playerService.createPlayer(gameTemplate.getPlayerId(), gameTemplate.getName());
+        List<Movement> startMovementList = initMovementList(gameTemplate.getStartValue(), player);
 
-        Game newGame = Game.builder()
-                .id(UUID.randomUUID())
-                .mode(gameTemplate.getName().isEmpty() ? GameMode.LOCAL : GameMode.REMOTE)
-                .opponent(player)
-                .movements(new LinkedList<>(List.of(startMove)))
-                .build();
+        Game newGame = createGameEntity(player, startMovementList, GameMode.LOCAL);
         applyGameMove(newGame, createComputerMove());
         return saveGame(newGame);
     }
@@ -122,6 +114,40 @@ public class GameService {
 
     private Game saveGame(Game game) {
         game.setStatus(determineGameStatus(game));
-        return repository.save(game);
+        return gameRepository.save(game);
+    }
+
+    public void createNewRemoteGame(NewRemoteGame newRemoteGame) {
+        int startValue = newRemoteGame.getStartValue();
+        playerService.findPlayerById(newRemoteGame.getRemotePlayer()).ifPresent(remotePlayer -> {
+            String playerId = getSessionID();
+            Player player = playerService.createPlayer(playerId, playerId);
+            List<Movement> startMovement = initMovementList(startValue, player);
+
+            Game remoteGame = gameRepository.save(createGameEntity(remotePlayer, startMovement, GameMode.REMOTE));
+
+            kafkaService.sendInvite(remoteGame.getId(), playerId, playerId, startValue);
+        });
+
+
+    }
+
+    private List<Movement> initMovementList(int startValue, Player firstPlayer){
+        Movement startMove = Movement.builder()
+                .movementSequenzNumber(1)
+                .number(startValue)
+                .player(firstPlayer)
+                .build();
+
+        return new LinkedList(List.of(startMove));
+    }
+
+    private Game createGameEntity(Player player, List<Movement> movements, GameMode mode) {
+        return Game.builder()
+                .id(UUID.randomUUID())
+                .mode(mode)
+                .opponent(player)
+                .movements(movements)
+                .build();
     }
 }
