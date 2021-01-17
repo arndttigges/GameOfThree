@@ -23,7 +23,7 @@ public class Player implements Serializable {
     @Id
     private String id;
 
-    private String address;
+    private String name;
 
     @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)
     private List<Game> games;

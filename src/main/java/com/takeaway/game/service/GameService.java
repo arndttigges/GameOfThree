@@ -83,7 +83,7 @@ public class GameService {
     public Game createNewGame(GameTemplate gameTemplate) {
         Player player = Player.builder()
                 .id(gameTemplate.getPlayerId())
-                .address(gameTemplate.getAddress())
+                .name(gameTemplate.getName())
                 .build();
 
         Movement startMove = Movement.builder()
@@ -94,7 +94,7 @@ public class GameService {
 
         Game newGame = Game.builder()
                 .id(UUID.randomUUID())
-                .mode(GameMode.LOCAL)
+                .mode(gameTemplate.getName().isEmpty() ? GameMode.LOCAL : GameMode.REMOTE)
                 .opponent(player)
                 .movements(new LinkedList<>(List.of(startMove)))
                 .build();
