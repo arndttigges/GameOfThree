@@ -76,8 +76,8 @@ public class GameService {
                 .map(movement -> Move.builder()
                         .sequenceNumber(movement.getMovementSequenzNumber())
                         .number(movement.getNumber())
-                        .opponentAction(movement.getPlayer().getId().equals(getSessionID()) ? null : movement.getAction())
-                        .myAction(movement.getPlayer().getId().equals(getSessionID()) ? movement.getAction() : null)
+                        .opponentAction(movement.getPlayer() == null ? null :movement.getPlayer().getId().equals(getSessionID()) ? null : movement.getAction())
+                        .myAction(movement.getPlayer() == null ? null :movement.getPlayer().getId().equals(getSessionID()) ? movement.getAction() : null)
                         .build())
                 .collect(Collectors.toList());
 

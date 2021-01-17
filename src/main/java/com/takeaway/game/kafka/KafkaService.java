@@ -5,7 +5,8 @@ import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.kafka.dto.Invite;
 import com.takeaway.game.kafka.dto.RemoteMove;
-import com.takeaway.game.model.Player;
+import com.takeaway.game.model.*;
+import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.repository.PlayerRepository;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
@@ -14,6 +15,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.util.*;
 import java.util.UUID;
 
 @Service
@@ -29,6 +31,7 @@ public class KafkaService {
     private final KafkaTemplate<String, RemoteMove> moveKafkaTemplate;
 
     private final PlayerRepository playerRepository;
+    private final GameRepository gameRepository;
 
     private final ObjectMapper mapper;
 
@@ -58,6 +61,21 @@ public class KafkaService {
     @KafkaListener(topics = "INVITE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
     public void listenToInvites(String inviteString) {
         Invite invite = mapper.readValue(inviteString, Invite.class);
+        Player remotePlayer = playerRepository.findById(invite.getPlayerId())
+                .orElse(Player.builder().id(invite.getPlayerId()).name(invite.getName()).build());
+
+        Game game = Game.builder()
+                .id(UUID.randomUUID())
+                .mode(GameMode.REMOTE)
+                .opponent(remotePlayer)
+                .movements(List.of(Movement.builder()
+                        .movementSequenzNumber(1)
+                        .number(invite.getStartValue())
+                        .player(remotePlayer)
+                        .build()))
+                .status(GameStatus.READY)
+                .build();
+        gameRepository.save(game);
         System.out.println("Received Message in group: " + invite);
     }
 
