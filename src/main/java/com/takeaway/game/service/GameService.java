@@ -124,12 +124,12 @@ public class GameService {
             Player player = playerService.createPlayer(playerId, playerId);
             List<Movement> startMovement = initMovementList(startValue, player);
 
-            Game remoteGame = gameRepository.save(createGameEntity(remotePlayer, startMovement, GameMode.REMOTE));
+            Game initRemoteGame = createGameEntity(remotePlayer, startMovement, GameMode.REMOTE);
+            initRemoteGame.setStatus(determineGameStatus(initRemoteGame));
+            Game remoteGame = gameRepository.save(initRemoteGame);
 
             kafkaService.sendInvite(remoteGame.getId(), playerId, playerId, startValue);
         });
-
-
     }
 
     private List<Movement> initMovementList(int startValue, Player firstPlayer){
@@ -139,7 +139,7 @@ public class GameService {
                 .player(firstPlayer)
                 .build();
 
-        return new LinkedList(List.of(startMove));
+        return new LinkedList<>(List.of(startMove));
     }
 
     private Game createGameEntity(Player player, List<Movement> movements, GameMode mode) {

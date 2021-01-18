@@ -2,6 +2,7 @@ package com.takeaway.game.service;
 
 import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.kafka.dto.Announcement;
+import com.takeaway.game.model.GameStatus;
 import com.takeaway.game.model.Player;
 import com.takeaway.game.repository.PlayerRepository;
 import lombok.AllArgsConstructor;
@@ -21,6 +22,10 @@ public class PlayerService {
     public List<Player> getAllInvites() {
         return playerRepository.findAll().stream()
                 .filter(player -> !player.getId().equals(getSessionID()))
+                .filter(player -> player.getGames() == null ||
+                        player.getGames().stream()
+                        .anyMatch(game -> game.getStatus() == GameStatus.FINISHED)
+                )
                 .collect(Collectors.toList());
     }
 

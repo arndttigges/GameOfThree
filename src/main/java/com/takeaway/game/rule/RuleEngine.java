@@ -18,8 +18,6 @@ public class RuleEngine {
 
     /**
      * executes a game move for a game
-     * @param game
-     * @param gameMove
      * @return Movement or empty, if move is invalid
      */
     public Optional<Movement> executeMove(Game game, GameMove gameMove) {
