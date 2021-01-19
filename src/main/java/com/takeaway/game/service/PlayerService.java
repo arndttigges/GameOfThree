@@ -22,7 +22,7 @@ public class PlayerService {
     public List<Player> getAllInvites() {
         return playerRepository.findAll().stream()
                 .filter(player -> !player.getId().equals(getSessionID()))
-                .filter(player -> player.getGames() == null ||
+                .filter(player -> player.getGames() == null || player.getGames().isEmpty() ||
                         player.getGames().stream()
                         .anyMatch(game -> game.getStatus() == GameStatus.FINISHED)
                 )

@@ -1,4 +1,4 @@
-package com.takeaway.game.service;
+package com.takeaway.game.model;
 
 import com.takeaway.game.model.*;
 import org.springframework.stereotype.Service;

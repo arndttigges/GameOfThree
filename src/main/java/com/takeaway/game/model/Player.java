@@ -25,6 +25,6 @@ public class Player implements Serializable {
     @Lob
     private String name;
 
-    @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)
+    @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.LAZY)
     private List<Game> games;
 }

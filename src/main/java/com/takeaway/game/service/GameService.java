@@ -55,7 +55,7 @@ public class GameService {
             GameMove computerMove = createComputerMove();
             applyGameMove(currentGame, computerMove);
         } else {
-
+            kafkaService.sendMove(currentGame.getId(), action.getPlayerId(), action.getMove());
         }
         return convertGame(saveGame(currentGame));
     }
@@ -87,11 +87,11 @@ public class GameService {
     public Game createNewLocalGame(GameTemplate gameTemplate) {
 
         Player player = playerService.createPlayer(gameTemplate.getPlayerId(), gameTemplate.getName());
-        List<Movement> startMovementList = initMovementList(gameTemplate.getStartValue(), player);
+        Player opponent = playerService.createPlayer(null,"COMPUTER");
 
-        Game newGame = createGameEntity(player, startMovementList, GameMode.LOCAL);
-        applyGameMove(newGame, createComputerMove());
-        return saveGame(newGame);
+        Game localGame = GameFactory.createNewGame(GameMode.LOCAL, opponent, player, gameTemplate.getStartValue());
+        applyGameMove(localGame, createComputerMove());
+        return saveGame(localGame);
     }
 
     private Game applyMovementToGame(Game currentGame, Movement movement) {
@@ -117,37 +117,16 @@ public class GameService {
         return gameRepository.save(game);
     }
 
-    public void createNewRemoteGame(NewRemoteGame newRemoteGame) {
+    public Game createNewRemoteGame(NewRemoteGame newRemoteGame) {
         int startValue = newRemoteGame.getStartValue();
-        playerService.findPlayerById(newRemoteGame.getRemotePlayer()).ifPresent(remotePlayer -> {
+        Optional<Player> remotePlayer = playerService.findPlayerById(newRemoteGame.getRemotePlayer());
+        if(remotePlayer.isPresent()){
             String playerId = getSessionID();
             Player player = playerService.createPlayer(playerId, playerId);
-            List<Movement> startMovement = initMovementList(startValue, player);
 
-            Game initRemoteGame = createGameEntity(remotePlayer, startMovement, GameMode.REMOTE);
-            initRemoteGame.setStatus(determineGameStatus(initRemoteGame));
-            Game remoteGame = gameRepository.save(initRemoteGame);
-
-            kafkaService.sendInvite(remoteGame.getId(), playerId, playerId, startValue);
-        });
-    }
-
-    private List<Movement> initMovementList(int startValue, Player firstPlayer){
-        Movement startMove = Movement.builder()
-                .movementSequenzNumber(1)
-                .number(startValue)
-                .player(firstPlayer)
-                .build();
-
-        return new LinkedList<>(List.of(startMove));
-    }
-
-    private Game createGameEntity(Player player, List<Movement> movements, GameMode mode) {
-        return Game.builder()
-                .id(UUID.randomUUID())
-                .mode(mode)
-                .opponent(player)
-                .movements(movements)
-                .build();
+            Game initRemoteGame = GameFactory.createNewGame(GameMode.REMOTE, remotePlayer.get(), player, startValue);
+            return gameRepository.save(initRemoteGame);
+        }
+        return null;
     }
 }

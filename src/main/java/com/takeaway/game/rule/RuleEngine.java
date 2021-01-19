@@ -39,7 +39,7 @@ public class RuleEngine {
         return Optional.empty();
     }
 
-    private Player getPlayerFromID(Player opponent, String playerId) {
+    Player getPlayerFromID(Player opponent, String playerId) {
         return opponent.getId().equals(playerId)
                 ? opponent
                 : Player.builder().id(playerId).build();

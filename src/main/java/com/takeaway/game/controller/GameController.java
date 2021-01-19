@@ -67,7 +67,13 @@ public class GameController {
                                 final Model model) {
 
         if (!bindingResult.hasErrors()) {
-            gameService.createNewRemoteGame(newRemoteGame);
+            Game game = gameService.createNewRemoteGame(newRemoteGame);
+            if(game != null) {
+                kafkaService.sendInvite(game.getId(),
+                        getSessionId(),
+                        getSessionId(),
+                        game.getMovements().get(0).getNumber());
+            }
         }
         model.addAllAttributes(modelAttributesForMainPage());
         return "main";
@@ -105,12 +111,16 @@ public class GameController {
 
     private Map<String, Object> modelAttributesForMainPage() {
         return Map.of(
-                "playerId", RequestContextHolder.currentRequestAttributes().getSessionId(),
+                "playerId", getSessionId() ,
                 "gameTemplate", new GameTemplate(),
                 "newRemoteGame", new NewRemoteGame(),
                 "games", gameService.getAllRunningGames(),
                 "players", playerService.getAllInvites()
         );
+    }
+
+    private String getSessionId() {
+        return RequestContextHolder.currentRequestAttributes().getSessionId();
     }
 
 }

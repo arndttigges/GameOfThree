@@ -5,7 +5,7 @@ import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.GameMode;
 import com.takeaway.game.model.Player;
-import com.takeaway.game.service.GameFactory;
+import com.takeaway.game.model.GameFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -8,14 +8,14 @@ import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.repository.PlayerRepository;
+import com.takeaway.game.rule.RuleEngine;
+import com.takeaway.game.service.GameService;
 import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.*;
 import java.util.UUID;
 
 @Service
@@ -32,6 +32,7 @@ public class KafkaService {
 
     private final PlayerRepository playerRepository;
     private final GameRepository gameRepository;
+    private final RuleEngine ruleEngine;
 
     private final ObjectMapper mapper;
 
@@ -43,7 +44,7 @@ public class KafkaService {
     @KafkaListener(topics = READY_FOR_GAME_TOPIC, groupId = "#{T(java.util.UUID).randomUUID().toString()}")
     public void listenToAnnouncements(String announcementString) {
         Announcement announcement = mapper.readValue(announcementString, Announcement.class);
-        if(!announcement.getPlayerId().isEmpty()) {
+        if (!announcement.getPlayerId().isEmpty()) {
             Player player = Player.builder()
                     .id(announcement.getPlayerId())
                     .name(announcement.getName())
@@ -61,28 +62,31 @@ public class KafkaService {
     @KafkaListener(topics = "INVITE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
     public void listenToInvites(String inviteString) {
         Invite invite = mapper.readValue(inviteString, Invite.class);
+
         Player remotePlayer = playerRepository.findById(invite.getPlayerId())
                 .orElse(Player.builder().id(invite.getPlayerId()).name(invite.getName()).build());
+        Game game = GameFactory.createNewGame(GameMode.REMOTE, remotePlayer, remotePlayer, invite.getStartValue());
 
-        Game game = Game.builder()
-                .id(UUID.randomUUID())
-                .mode(GameMode.REMOTE)
-                .opponent(remotePlayer)
-                .movements(List.of(Movement.builder()
-                        .movementSequenzNumber(1)
-                        .number(invite.getStartValue())
-                        .player(remotePlayer)
-                        .build()))
-                .status(GameStatus.READY)
-                .build();
         gameRepository.save(game);
         System.out.println("Received Message in group: " + invite);
+    }
+
+    public void sendMove(UUID gameID, String playerId, Action action) {
+        RemoteMove remoteMove = new RemoteMove(gameID, action, playerId);
+        moveKafkaTemplate.send(MOVE_GAME_TOPIC, remoteMove);
     }
 
     @SneakyThrows
     @KafkaListener(topics = "MOVE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
     public void listenToMoves(String moveString) {
         RemoteMove move = mapper.readValue(moveString, RemoteMove.class);
-        System.out.println("Received Message in group: " + move);
+
+        gameRepository.findById(move.getGameId()).ifPresent(game -> {
+            GameMove gameMove = new GameMove(move.getAction(), move.getPlayerId());
+            ruleEngine.executeMove(game, gameMove).ifPresent(
+                    movement -> game.getMovements().add(movement)
+            );
+            gameRepository.save(game);
+        });
     }
 }
