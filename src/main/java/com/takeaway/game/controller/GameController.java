@@ -56,9 +56,14 @@ public class GameController {
     String announceAvailability(final HttpSession session,
                                 final Model model) {
 
-        playerService.createReadyToPlayAnnouncement(session.getId());
+        createReadyToPlayAnnouncement(session.getId());
         model.addAllAttributes(modelAttributesForMainPage());
         return "main";
+    }
+
+    private void createReadyToPlayAnnouncement(String name) {
+        Announcement announcement = new Announcement(getSessionId(), name);
+        kafkaService.sendAnnouncement(announcement);
     }
 
     @PostMapping("/game/remote/new")
@@ -115,7 +120,7 @@ public class GameController {
                 "gameTemplate", new GameTemplate(),
                 "newRemoteGame", new NewRemoteGame(),
                 "games", gameService.getAllRunningGames(),
-                "players", playerService.getAllInvites()
+                "players", playerService.getAllPlayerReadyToPlay()
         );
     }
 
