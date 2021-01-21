@@ -1,6 +1,6 @@
 package com.takeaway.game.dto;
 
-import com.takeaway.game.model.GameStatus;
+import com.takeaway.game.model.Status;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -8,10 +8,10 @@ import java.util.*;
 
 @Builder
 @Getter
-public class DetailedGame {
+public class GameMovements {
 
     private final UUID uuid;
-    private final GameStatus status;
+    private final Status status;
     private final List<Move> movements;
 
 }

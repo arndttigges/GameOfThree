@@ -3,7 +3,7 @@ package com.takeaway.game.rule;
 import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
-import com.takeaway.game.model.GameMode;
+import com.takeaway.game.model.Mode;
 import com.takeaway.game.service.GameFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +29,7 @@ class DivideByThreeRuleTest {
     })
     @ParameterizedTest
     void ruleIsCheckingNumberConditionCorrectly(int value, boolean result) {
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_B, value);
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, value);
         GameMove move = new GameMove(Action.ZERO, PLAYER_A);
 
         assertEquals(result, rule.isAllowedMove(game, move));
@@ -37,7 +37,7 @@ class DivideByThreeRuleTest {
 
     @Test
     void playerCanNotMakeAnotherMove() {
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_B, 42);
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, 42);
         GameMove move = new GameMove(Action.ZERO, PLAYER_B);
 
         assertFalse(rule.isAllowedMove(game, move));

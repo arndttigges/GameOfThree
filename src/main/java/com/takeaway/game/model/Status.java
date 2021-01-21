@@ -1,5 +1,5 @@
 package com.takeaway.game.model;
 
-public enum GameStatus {
+public enum Status {
     READY, WAITING, FINISHED
 }

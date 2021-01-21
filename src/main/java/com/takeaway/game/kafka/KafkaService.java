@@ -8,7 +8,7 @@ import com.takeaway.game.kafka.dto.Invite;
 import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
-import com.takeaway.game.model.GameMode;
+import com.takeaway.game.model.Mode;
 import com.takeaway.game.model.Invitation;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.repository.InvitationRepository;
@@ -60,7 +60,7 @@ public class KafkaService {
     public void listenToInvites(String inviteString) throws JsonProcessingException {
         Invite invite = mapper.readValue(inviteString, Invite.class);
 
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, invite.getPlayerId(), invite.getPlayerId(), invite.getStartValue());
+        Game game = GameFactory.createNewGame(Mode.REMOTE, invite.getPlayerId(), invite.getPlayerId(), invite.getStartValue());
         game.setId(invite.getGameId());
         gameRepository.save(game);
         System.out.println("Received Message in group: " + invite);

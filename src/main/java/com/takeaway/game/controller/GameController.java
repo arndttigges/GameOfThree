@@ -44,7 +44,7 @@ public class GameController {
 
         if (!bindingResult.hasErrors()) {
             Game createdGame = gameService.createNewLocalGame(gameTemplate);
-            Announcement announcement = new Announcement(gameTemplate.getPlayerId(), gameTemplate.getName());
+            Announcement announcement = new Announcement(gameTemplate.getPlayerId(), gameTemplate.getPlayerId());
             kafkaService.sendAnnouncement(announcement);
             model.addAttribute("gameTemplate", gameTemplate);
         }

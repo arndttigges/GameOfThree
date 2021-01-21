@@ -15,7 +15,6 @@ import javax.validation.constraints.Min;
 public class GameTemplate {
 
     private String playerId;
-    private String name;
 
     @Min(1)
     @Max(Integer.MAX_VALUE)

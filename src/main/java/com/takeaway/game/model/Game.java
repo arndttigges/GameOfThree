@@ -25,9 +25,9 @@ public class Game implements Serializable {
     @Id
     UUID id;
 
-    GameStatus status;
+    Status status;
     String opponentId;
-    GameMode mode;
+    Mode mode;
 
     @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)
     List<Movement> movements;

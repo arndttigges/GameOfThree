@@ -8,9 +8,9 @@ import lombok.Getter;
 @Builder
 public class Move {
 
-    private int sequenceNumber;
-    private Action myAction;
-    private int number;
-    private Action opponentAction;
+    private final int sequenceNumber;
+    private final Action myAction;
+    private final int number;
+    private final Action opponentAction;
 
 }

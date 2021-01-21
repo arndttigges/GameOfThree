@@ -22,23 +22,23 @@ public class GameService {
     private final KafkaService kafkaService;
     private final RuleEngine ruleEngine;
 
-    public List<GameView> getAllRunningGames() {
+    public List<GameOverviewElement> getAllRunningGames() {
         return GameFactory.convertToGameView(gameRepository.findAll());
     }
 
-    public DetailedGame fetchGame(UUID gameId) {
+    public GameMovements fetchGame(UUID gameId) {
         Optional<Game> gameOptional = gameRepository.findById(gameId);
         return gameOptional.map(this::convertGame).orElse(null);
     }
 
-    public DetailedGame performMove(UUID gameId, GameMove action) {
+    public GameMovements performMove(UUID gameId, GameMove action) {
         Game currentGame = gameRepository.findById(gameId).orElseThrow();
         return performMove(currentGame, action);
     }
 
-    public DetailedGame performMove(Game currentGame, GameMove action) {
+    public GameMovements performMove(Game currentGame, GameMove action) {
         applyGameMove(currentGame, action);
-        if (currentGame.getMode() == GameMode.LOCAL) {
+        if (currentGame.getMode() == Mode.LOCAL) {
             GameMove computerMove = createComputerMove();
             applyGameMove(currentGame, computerMove);
         } else {
@@ -57,12 +57,12 @@ public class GameService {
         return new GameMove(computerAction, "COMPUTER");
     }
 
-    private DetailedGame convertGame(Game game) {
+    private GameMovements convertGame(Game game) {
         return GameFactory.createDetailedGameFromGame(game, getSessionID());
     }
 
     public Game createNewLocalGame(GameTemplate gameTemplate) {
-        Game localGame = GameFactory.createNewGame(GameMode.LOCAL, "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
+        Game localGame = GameFactory.createNewGame(Mode.LOCAL, "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
         applyGameMove(localGame, createComputerMove());
         return saveGame(localGame);
     }
@@ -72,13 +72,13 @@ public class GameService {
         return currentGame;
     }
 
-    private GameStatus determineGameStatus(Game game) {
+    Status determineGameStatus(Game game) {
         Movement lastMovement = game.getMovements().get(game.getMovements().size() - 1);
 
-        if (lastMovement.getNumber() <= 1) return GameStatus.FINISHED;
-        if (lastMovement.getPlayerId().equals(getSessionID())) return GameStatus.WAITING;
+        if (lastMovement.getNumber() <= 1) return Status.FINISHED;
+        if (lastMovement.getPlayerId().equals(getSessionID())) return Status.WAITING;
 
-        return GameStatus.READY;
+        return Status.READY;
     }
 
     private String getSessionID() {
@@ -92,7 +92,7 @@ public class GameService {
 
     public Game createNewRemoteGame(NewRemoteGame newRemoteGame) {
         int startValue = newRemoteGame.getStartValue();
-        Game initRemoteGame = GameFactory.createNewGame(GameMode.REMOTE, newRemoteGame.getRemotePlayer(), getSessionID(), startValue);
+        Game initRemoteGame = GameFactory.createNewGame(Mode.REMOTE, newRemoteGame.getRemotePlayer(), getSessionID(), startValue);
         return gameRepository.save(initRemoteGame);
     }
 }

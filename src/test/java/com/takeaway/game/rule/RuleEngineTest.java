@@ -3,7 +3,7 @@ package com.takeaway.game.rule;
 import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
-import com.takeaway.game.model.GameMode;
+import com.takeaway.game.model.Mode;
 import com.takeaway.game.model.Movement;
 import com.takeaway.game.service.GameFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,7 +36,7 @@ class RuleEngineTest {
 
     @Test
     void createMovement() {
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_B, 42);
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, 42);
         game.getMovements().get(0).setAction(Action.ZERO);
         GameMove move = new GameMove(Action.ZERO, PLAYER_A);
 
@@ -53,7 +53,7 @@ class RuleEngineTest {
 
     @Test
     void noValueIfMovementIsInvalid() {
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_B, 42);
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, 42);
         GameMove move = new GameMove(Action.ZERO, PLAYER_A);
 
         when(rule.isAllowedMove(game, move)).thenReturn(false);

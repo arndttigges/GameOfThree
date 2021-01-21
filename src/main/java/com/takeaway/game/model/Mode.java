@@ -1,5 +1,5 @@
 package com.takeaway.game.model;
 
-public enum GameMode {
+public enum Mode {
     LOCAL, REMOTE
 }

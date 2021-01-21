@@ -11,7 +11,7 @@ class GameFactoryTest {
     private static final String PLAYER_B = "B";
 
     private static final int START_VALUE = 42;
-    private static final GameMode GAME_MODE = GameMode.LOCAL;
+    private static final Mode GAME_MODE = Mode.LOCAL;
 
     @Test
     void createValidNewGame() {
@@ -23,7 +23,7 @@ class GameFactoryTest {
                 () -> assertEquals(START_VALUE, game.getMovements().get(0).getNumber()),
                 () -> assertEquals(GAME_MODE, game.getMode()),
                 () -> assertEquals(PLAYER_A, game.getOpponentId()),
-                () -> assertEquals(GameStatus.WAITING, game.status)
+                () -> assertEquals(Status.WAITING, game.status)
         );
     }
 
@@ -36,13 +36,13 @@ class GameFactoryTest {
 
     @Test
     void incomingRemoteGameIsInReadyStatus() {
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_A, START_VALUE);
-        assertEquals(GameStatus.READY, game.getStatus());
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_A, START_VALUE);
+        assertEquals(Status.READY, game.getStatus());
     }
 
     @Test
     void outgoingRemoteGameIsInWaitingStatus() {
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_B, START_VALUE);
-        assertEquals(GameStatus.WAITING, game.getStatus());
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, START_VALUE);
+        assertEquals(Status.WAITING, game.getStatus());
     }
 }

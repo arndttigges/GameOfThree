@@ -1,7 +1,7 @@
 package com.takeaway.game.service;
 
-import com.takeaway.game.dto.DetailedGame;
-import com.takeaway.game.dto.GameView;
+import com.takeaway.game.dto.GameMovements;
+import com.takeaway.game.dto.GameOverviewElement;
 import com.takeaway.game.dto.Move;
 import com.takeaway.game.model.*;
 
@@ -12,22 +12,22 @@ import java.util.stream.Collectors;
 
 public class GameFactory {
 
-    public static Game createNewGame(GameMode mode, String opponent, String firstMovePlayer, int startValue) {
+    public static Game createNewGame(Mode mode, String opponent, String firstMovePlayer, int startValue) {
         return Game.builder()
                 .id(UUID.randomUUID())
                 .mode(mode)
                 .opponentId(opponent)
                 .movements(new LinkedList<>(List.of(createFirstMove(startValue, firstMovePlayer))))
-                .status(mode == GameMode.REMOTE && opponent.equals(firstMovePlayer) ? GameStatus.READY : GameStatus.WAITING)
+                .status(mode == Mode.REMOTE && opponent.equals(firstMovePlayer) ? Status.READY : Status.WAITING)
                 .build();
     }
 
-    public static List<GameView> convertToGameView(List<Game> games) {
+    public static List<GameOverviewElement> convertToGameView(List<Game> games) {
        return games
                 .stream()
                 .map(game -> {
                     Movement lastMove = game.getMovements().get(game.getMovements().size() - 1);
-                    return GameView.builder()
+                    return GameOverviewElement.builder()
                             .uuid(game.getId())
                             .opponent(game.getOpponentId())
                             .lastStep(lastMove.getAction())
@@ -39,13 +39,13 @@ public class GameFactory {
                 .collect(Collectors.toList());
     }
 
-    public static DetailedGame createDetailedGameFromGame(Game game, String userId) {
+    public static GameMovements createDetailedGameFromGame(Game game, String userId) {
         List<Move> moves = game.getMovements()
                 .stream()
                 .map(movement -> convertMovementToMove(movement, userId))
                 .collect(Collectors.toList());
 
-        return DetailedGame.builder().uuid(game.getId()).status(game.getStatus()).movements(moves).build();
+        return GameMovements.builder().uuid(game.getId()).status(game.getStatus()).movements(moves).build();
     }
 
     private static Movement createFirstMove(int startValue, String player) {
