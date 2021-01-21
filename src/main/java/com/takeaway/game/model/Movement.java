@@ -16,7 +16,7 @@ import javax.persistence.Id;
 public class Movement {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Long id;
     private int movementSequenzNumber;
     private int number;

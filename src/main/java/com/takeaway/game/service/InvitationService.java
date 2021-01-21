@@ -21,6 +21,10 @@ public class InvitationService {
                 .collect(Collectors.toList());
     }
 
+    public void deleteInvitation(String remotePlayer) {
+        invitationRepository.deleteById(remotePlayer);
+    }
+
     private String getSessionID() {
         return RequestContextHolder.currentRequestAttributes().getSessionId();
     }

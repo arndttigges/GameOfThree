@@ -15,9 +15,14 @@ kafka:
     invite-to-a-game: INVITE
     move: MOVE
 
-# adjusting logging for entire Kafka
-log4j:
-  logger:
-    org:
-      apache:
-        kafka: WARN
+---
+spring:
+  profiles: A
+server:
+  port: 8081
+
+---
+spring:
+  profiles: B
+server:
+  port: 8082

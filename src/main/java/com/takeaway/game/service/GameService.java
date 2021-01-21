@@ -19,7 +19,6 @@ import java.util.UUID;
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final InvitationService playerService;
     private final KafkaService kafkaService;
     private final RuleEngine ruleEngine;
 
@@ -63,8 +62,6 @@ public class GameService {
     }
 
     public Game createNewLocalGame(GameTemplate gameTemplate) {
-
-
         Game localGame = GameFactory.createNewGame(GameMode.LOCAL, "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
         applyGameMove(localGame, createComputerMove());
         return saveGame(localGame);

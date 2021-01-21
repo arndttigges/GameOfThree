@@ -28,7 +28,7 @@ import java.util.UUID;
 public class GameController {
 
     private final GameService gameService;
-    private final InvitationService playerService;
+    private final InvitationService invitationService;
     private final KafkaService kafkaService;
 
     @GetMapping("/")
@@ -74,10 +74,12 @@ public class GameController {
         if (!bindingResult.hasErrors()) {
             Game game = gameService.createNewRemoteGame(newRemoteGame);
             if(game != null) {
+                invitationService.deleteInvitation(newRemoteGame.getRemotePlayer());
                 kafkaService.sendInvite(game.getId(),
                         getSessionId(),
                         getSessionId(),
                         game.getMovements().get(0).getNumber());
+
             }
         }
         model.addAllAttributes(modelAttributesForMainPage());
@@ -120,7 +122,7 @@ public class GameController {
                 "gameTemplate", new GameTemplate(),
                 "newRemoteGame", new NewRemoteGame(),
                 "games", gameService.getAllRunningGames(),
-                "players", playerService.getInvitations()
+                "players", invitationService.getInvitations()
         );
     }
 
