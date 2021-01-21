@@ -1,17 +1,20 @@
 package com.takeaway.game.kafka;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.kafka.dto.Invite;
 import com.takeaway.game.kafka.dto.RemoteMove;
-import com.takeaway.game.model.*;
+import com.takeaway.game.model.Action;
+import com.takeaway.game.model.Game;
+import com.takeaway.game.model.GameMode;
+import com.takeaway.game.model.Invitation;
 import com.takeaway.game.repository.GameRepository;
-import com.takeaway.game.repository.PlayerRepository;
+import com.takeaway.game.repository.InvitationRepository;
 import com.takeaway.game.rule.RuleEngine;
-import com.takeaway.game.service.GameService;
+import com.takeaway.game.service.GameFactory;
 import lombok.AllArgsConstructor;
-import lombok.SneakyThrows;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -30,7 +33,7 @@ public class KafkaService {
     private final KafkaTemplate<String, Invite> inviteKafkaTemplate;
     private final KafkaTemplate<String, RemoteMove> moveKafkaTemplate;
 
-    private final PlayerRepository playerRepository;
+    private final InvitationRepository invitationRepository;
     private final GameRepository gameRepository;
     private final RuleEngine ruleEngine;
 
@@ -40,16 +43,11 @@ public class KafkaService {
         announcementTemplate.send(READY_FOR_GAME_TOPIC, announcement);
     }
 
-    @SneakyThrows
     @KafkaListener(topics = READY_FOR_GAME_TOPIC, groupId = "#{T(java.util.UUID).randomUUID().toString()}")
-    public void listenToAnnouncements(String announcementString) {
+    public void listenToAnnouncements(String announcementString) throws JsonProcessingException {
         Announcement announcement = mapper.readValue(announcementString, Announcement.class);
         if (!announcement.getPlayerId().isEmpty()) {
-            Player player = Player.builder()
-                    .id(announcement.getPlayerId())
-                    .name(announcement.getName())
-                    .build();
-            playerRepository.save(player);
+            invitationRepository.save(new Invitation(announcement.getPlayerId()));
         }
     }
 
@@ -58,15 +56,12 @@ public class KafkaService {
         inviteKafkaTemplate.send(INVITE_GAME_TOPIC, invite);
     }
 
-    @SneakyThrows
     @KafkaListener(topics = "INVITE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
-    public void listenToInvites(String inviteString) {
+    public void listenToInvites(String inviteString) throws JsonProcessingException {
         Invite invite = mapper.readValue(inviteString, Invite.class);
 
-        Player remotePlayer = playerRepository.findById(invite.getPlayerId())
-                .orElse(Player.builder().id(invite.getPlayerId()).name(invite.getName()).build());
-        Game game = GameFactory.createNewGame(GameMode.REMOTE, remotePlayer, remotePlayer, invite.getStartValue());
-
+        Game game = GameFactory.createNewGame(GameMode.REMOTE, invite.getPlayerId(), invite.getPlayerId(), invite.getStartValue());
+        game.setId(invite.getGameId());
         gameRepository.save(game);
         System.out.println("Received Message in group: " + invite);
     }
@@ -76,9 +71,8 @@ public class KafkaService {
         moveKafkaTemplate.send(MOVE_GAME_TOPIC, remoteMove);
     }
 
-    @SneakyThrows
     @KafkaListener(topics = "MOVE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
-    public void listenToMoves(String moveString) {
+    public void listenToMoves(String moveString) throws JsonProcessingException {
         RemoteMove move = mapper.readValue(moveString, RemoteMove.class);
 
         gameRepository.findById(move.getGameId()).ifPresent(game -> {

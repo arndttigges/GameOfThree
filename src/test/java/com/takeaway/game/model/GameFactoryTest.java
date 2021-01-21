@@ -1,13 +1,15 @@
 package com.takeaway.game.model;
 
+import com.takeaway.game.service.GameFactory;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class GameFactoryTest {
 
-    private static final Player PLAYER_A = Player.builder().id("a").name("a").build();
-    private static final Player PLAYER_B = Player.builder().id("b").name("b").build();
+    private static final String PLAYER_A = "A";
+    private static final String PLAYER_B = "B";
+
     private static final int START_VALUE = 42;
     private static final GameMode GAME_MODE = GameMode.LOCAL;
 
@@ -17,10 +19,10 @@ class GameFactoryTest {
         assertAll(
                 () -> assertFalse(game.getMovements().isEmpty()),
                 () -> assertEquals(1, game.getMovements().get(0).getMovementSequenzNumber()),
-                () -> assertEquals(PLAYER_B, game.getMovements().get(0).getPlayer()),
+                () -> assertEquals(PLAYER_B, game.getMovements().get(0).getPlayerId()),
                 () -> assertEquals(START_VALUE, game.getMovements().get(0).getNumber()),
                 () -> assertEquals(GAME_MODE, game.getMode()),
-                () -> assertEquals(PLAYER_A, game.getOpponent()),
+                () -> assertEquals(PLAYER_A, game.getOpponentId()),
                 () -> assertEquals(GameStatus.WAITING, game.status)
         );
     }

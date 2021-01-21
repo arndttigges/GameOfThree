@@ -2,6 +2,7 @@ package com.takeaway.game.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,17 +19,17 @@ import static javax.persistence.CascadeType.ALL;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Transactional
 public class Game implements Serializable {
 
     @Id
     UUID id;
 
     GameStatus status;
+    String opponentId;
     GameMode mode;
 
     @OneToMany(targetEntity=Movement.class, cascade = ALL,fetch=FetchType.EAGER)
     List<Movement> movements;
 
-    @ManyToOne(targetEntity=Player.class, cascade = ALL,fetch=FetchType.LAZY)
-    Player opponent;
 }

@@ -21,6 +21,6 @@ public class Movement {
     private int movementSequenzNumber;
     private int number;
     private Action action;
-    private Player player;
+    private String playerId;
 
 }

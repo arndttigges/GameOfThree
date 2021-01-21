@@ -14,3 +14,10 @@ kafka:
     ready-for-game: READY
     invite-to-a-game: INVITE
     move: MOVE
+
+# adjusting logging for entire Kafka
+log4j:
+  logger:
+    org:
+      apache:
+        kafka: WARN

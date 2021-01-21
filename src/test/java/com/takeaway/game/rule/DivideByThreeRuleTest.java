@@ -4,8 +4,7 @@ import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.GameMode;
-import com.takeaway.game.model.Player;
-import com.takeaway.game.model.GameFactory;
+import com.takeaway.game.service.GameFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class DivideByThreeRuleTest {
 
-    private static final Player PLAYER_A = Player.builder().id("a").build();
-    private static final Player PLAYER_B = Player.builder().id("b").build();
+    private static final String PLAYER_A = "a";
+    private static final String PLAYER_B = "b";
     DivideByThreeRule rule;
 
     @BeforeEach
@@ -31,7 +30,7 @@ class DivideByThreeRuleTest {
     @ParameterizedTest
     void ruleIsCheckingNumberConditionCorrectly(int value, boolean result) {
         Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_B, value);
-        GameMove move = new GameMove(Action.ZERO, PLAYER_A.getId());
+        GameMove move = new GameMove(Action.ZERO, PLAYER_A);
 
         assertEquals(result, rule.isAllowedMove(game, move));
     }
@@ -39,7 +38,7 @@ class DivideByThreeRuleTest {
     @Test
     void playerCanNotMakeAnotherMove() {
         Game game = GameFactory.createNewGame(GameMode.REMOTE, PLAYER_A, PLAYER_B, 42);
-        GameMove move = new GameMove(Action.ZERO, PLAYER_B.getId());
+        GameMove move = new GameMove(Action.ZERO, PLAYER_B);
 
         assertFalse(rule.isAllowedMove(game, move));
     }

@@ -6,37 +6,25 @@ import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.RuleEngine;
 import lombok.AllArgsConstructor;
-import org.apache.kafka.common.network.Mode;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final PlayerService playerService;
+    private final InvitationService playerService;
     private final KafkaService kafkaService;
     private final RuleEngine ruleEngine;
 
     public List<GameView> getAllRunningGames() {
-        return gameRepository.findAll()
-                .stream()
-                .map(game -> {
-                    Movement lastMove = game.getMovements().get(game.getMovements().size() - 1);
-                    return GameView.builder()
-                            .uuid(game.getId())
-                            .opponent(game.getOpponent().getId())
-                            .lastStep(lastMove.getAction())
-                            .sequenceNumber(lastMove.getMovementSequenzNumber())
-                            .number(lastMove.getNumber())
-                            .status(game.getStatus())
-                            .build();
-                })
-                .collect(Collectors.toList());
+        return GameFactory.convertToGameView(gameRepository.findAll());
     }
 
     public DetailedGame fetchGame(UUID gameId) {
@@ -51,7 +39,7 @@ public class GameService {
 
     public DetailedGame performMove(Game currentGame, GameMove action) {
         applyGameMove(currentGame, action);
-        if(currentGame.getMode() == GameMode.LOCAL) {
+        if (currentGame.getMode() == GameMode.LOCAL) {
             GameMove computerMove = createComputerMove();
             applyGameMove(currentGame, computerMove);
         } else {
@@ -71,25 +59,13 @@ public class GameService {
     }
 
     private DetailedGame convertGame(Game game) {
-        List<Move> moves = game.getMovements()
-                .stream()
-                .map(movement -> Move.builder()
-                        .sequenceNumber(movement.getMovementSequenzNumber())
-                        .number(movement.getNumber())
-                        .opponentAction(movement.getPlayer() == null ? null :movement.getPlayer().getId().equals(getSessionID()) ? null : movement.getAction())
-                        .myAction(movement.getPlayer() == null ? null :movement.getPlayer().getId().equals(getSessionID()) ? movement.getAction() : null)
-                        .build())
-                .collect(Collectors.toList());
-
-        return DetailedGame.builder().uuid(game.getId()).status(game.getStatus()).movements(moves).build();
+        return GameFactory.createDetailedGameFromGame(game, getSessionID());
     }
 
     public Game createNewLocalGame(GameTemplate gameTemplate) {
 
-        Player player = playerService.createPlayer(gameTemplate.getPlayerId(), gameTemplate.getName());
-        Player opponent = playerService.createPlayer(null,"COMPUTER");
 
-        Game localGame = GameFactory.createNewGame(GameMode.LOCAL, opponent, player, gameTemplate.getStartValue());
+        Game localGame = GameFactory.createNewGame(GameMode.LOCAL, "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
         applyGameMove(localGame, createComputerMove());
         return saveGame(localGame);
     }
@@ -102,8 +78,8 @@ public class GameService {
     private GameStatus determineGameStatus(Game game) {
         Movement lastMovement = game.getMovements().get(game.getMovements().size() - 1);
 
-        if(lastMovement.getNumber() <= 1) return GameStatus.FINISHED;
-        if(lastMovement.getPlayer().getId().equals(getSessionID())) return GameStatus.WAITING;
+        if (lastMovement.getNumber() <= 1) return GameStatus.FINISHED;
+        if (lastMovement.getPlayerId().equals(getSessionID())) return GameStatus.WAITING;
 
         return GameStatus.READY;
     }
@@ -119,14 +95,7 @@ public class GameService {
 
     public Game createNewRemoteGame(NewRemoteGame newRemoteGame) {
         int startValue = newRemoteGame.getStartValue();
-        Optional<Player> remotePlayer = playerService.findPlayerById(newRemoteGame.getRemotePlayer());
-        if(remotePlayer.isPresent()){
-            String playerId = getSessionID();
-            Player player = playerService.createPlayer(playerId, playerId);
-
-            Game initRemoteGame = GameFactory.createNewGame(GameMode.REMOTE, remotePlayer.get(), player, startValue);
-            return gameRepository.save(initRemoteGame);
-        }
-        return null;
+        Game initRemoteGame = GameFactory.createNewGame(GameMode.REMOTE, newRemoteGame.getRemotePlayer(), getSessionID(), startValue);
+        return gameRepository.save(initRemoteGame);
     }
 }

@@ -35,14 +35,14 @@
                     <th:block th:each="player : ${players}">
                         <tr>
                             <form th:action="@{/game/remote/new}" th:object="${newRemoteGame}" method="post">
-                                <td th:text="${player.name}">...</td>
+                                <td th:text="${player.playerId}">...</td>
                                 <td>
                                     <input type="text" pattern="^\d+$" class="form-control" th:field="*{startValue}">
                                 </td>
                                 <td>
                                     <button type="submit" class="btn btn-primary">Invite</button>
                                 </td>
-                                <input type="hidden" th:value="${player.name}" name="remotePlayer" />
+                                <input type="hidden" th:value="${player.playerId}" name="remotePlayer" />
                             </form>
                         </tr>
                     </th:block>

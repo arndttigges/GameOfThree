@@ -4,7 +4,6 @@ import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Movement;
-import com.takeaway.game.model.Player;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,20 +17,20 @@ public class RuleEngine {
 
     /**
      * executes a game move for a game
+     *
      * @return Movement or empty, if move is invalid
      */
     public Optional<Movement> executeMove(Game game, GameMove gameMove) {
-        if( rule.isAllowedMove(game, gameMove)) {
+        if (rule.isAllowedMove(game, gameMove)) {
             Movement lastMovement = getLastMovement(game);
 
             int newValue = rule.calcNewValue(lastMovement.getNumber(), gameMove.getMove());
             int newSequenceNumber = lastMovement.getMovementSequenzNumber() + 1;
-            Player player = getPlayerFromID(game.getOpponent(), gameMove.getPlayerId());
             Action newAction = gameMove.getMove();
 
             return Optional.of(Movement.builder()
                     .action(newAction)
-                    .player(player)
+                    .playerId(game.getOpponentId())
                     .number(newValue)
                     .movementSequenzNumber(newSequenceNumber)
                     .build());
@@ -39,10 +38,10 @@ public class RuleEngine {
         return Optional.empty();
     }
 
-    Player getPlayerFromID(Player opponent, String playerId) {
-        return opponent.getId().equals(playerId)
+    String getPlayerFromID(String opponent, String playerId) {
+        return opponent.equals(playerId)
                 ? opponent
-                : Player.builder().id(playerId).build();
+                : playerId;
     }
 
     private Movement getLastMovement(Game game) {

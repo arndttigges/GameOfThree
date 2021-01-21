@@ -14,7 +14,7 @@ public class DivideByThreeRule implements Rule {
     public boolean isAllowedMove(Game game, GameMove move) {
         Movement lastMovement = game.getMovements().get(game.getMovements().size() - 1);
 
-        boolean isDifferentUser = !lastMovement.getPlayer().getId().equals(move.getPlayerId());
+        boolean isDifferentUser = !lastMovement.getPlayerId().equals(move.getPlayerId());
         boolean valueIsHighEnough = lastMovement.getNumber() > 1;
 
         return isDifferentUser && valueIsHighEnough;

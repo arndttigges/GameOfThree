@@ -7,7 +7,7 @@ import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.service.GameService;
-import com.takeaway.game.service.PlayerService;
+import com.takeaway.game.service.InvitationService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,7 +28,7 @@ import java.util.UUID;
 public class GameController {
 
     private final GameService gameService;
-    private final PlayerService playerService;
+    private final InvitationService playerService;
     private final KafkaService kafkaService;
 
     @GetMapping("/")
@@ -120,7 +120,7 @@ public class GameController {
                 "gameTemplate", new GameTemplate(),
                 "newRemoteGame", new NewRemoteGame(),
                 "games", gameService.getAllRunningGames(),
-                "players", playerService.getAllPlayerReadyToPlay()
+                "players", playerService.getInvitations()
         );
     }
 
