@@ -26,7 +26,7 @@ public class GameService {
     private final RuleEngine ruleEngine;
 
     public List<GameOverviewElement> getAllRunningGames() {
-        return GameFactory.convertToGameView(gameRepository.findAll());
+        return GameFactory.convertToGameView(gameRepository.findAll(), getSessionID());
     }
 
     public GameMovements fetchGame(UUID gameId) {
@@ -47,12 +47,11 @@ public class GameService {
         } else {
             kafkaService.sendMove(
                     currentGame.getId(),
-                    action.getPlayerId(),
-                    currentGame.getOpponentId(),
+                    getSessionID(),
                     action.getAction(),
                     currentGame.getMovements().get(currentGame.getMovements().size() -1).getMovementSequenzNumber());
         }
-        return convertGame(saveGame(currentGame));
+        return convertGame(gameRepository.save(currentGame));
     }
 
     private void applyGameMove(Game currentGame, GameMove action) {
@@ -75,7 +74,7 @@ public class GameService {
     public Game createNewLocalGame(GameTemplate gameTemplate) {
         Game localGame = GameFactory.createNewGame(Mode.LOCAL, gameTemplate.getPlayerId(), "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
         applyGameMove(localGame, createComputerMove());
-        return saveGame(localGame);
+        return gameRepository.save(localGame);
     }
 
     private Game applyMovementToGame(Game currentGame, Movement movement) {
@@ -85,11 +84,6 @@ public class GameService {
 
     private String getSessionID() {
         return RequestContextHolder.currentRequestAttributes().getSessionId();
-    }
-
-    private Game saveGame(Game game) {
-        game.setStatus(GameFactory.determineGameStatus(game, getSessionID()));
-        return gameRepository.save(game);
     }
 
     public Game createNewRemoteGame(NewRemoteGame newRemoteGame) {

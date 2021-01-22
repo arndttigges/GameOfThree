@@ -66,8 +66,8 @@ public class KafkaService {
         gameRepository.save(game);
     }
 
-    public void sendMove(UUID gameID, String playerId, String opponentId, Action action, int sequenznumber) {
-        RemoteMove remoteMove = new RemoteMove(gameID, action, sequenznumber, playerId, opponentId);
+    public void sendMove(UUID gameID, String playerId, Action action, int sequenznumber) {
+        RemoteMove remoteMove = new RemoteMove(gameID, action, sequenznumber, playerId);
         moveKafkaTemplate.send(MOVE_GAME_TOPIC, remoteMove);
     }
 
@@ -84,7 +84,6 @@ public class KafkaService {
                         ruleEngine.executeMove(game, gameMove).ifPresent(
                                 movement -> game.getMovements().add(movement)
                         );
-                        game.setStatus(GameFactory.determineGameStatus(game, game.getOpponentId()));
                         gameRepository.save(game);
                     }
         });

@@ -67,7 +67,7 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine, times(2)).executeMove(any(Game.class), any(GameMove.class));
-        verify(kafkaService, times(0)).sendMove(testGame.getId(), PLAYER_B, PLAYER_A, testMove.getAction(),2);
+        verify(kafkaService, times(0)).sendMove(testGame.getId(), PLAYER_B, testMove.getAction(),2);
     }
 
     @Test
@@ -91,7 +91,7 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine).executeMove(testGame, testMove);
-        verify(kafkaService).sendMove(testGame.getId(), PLAYER_B, PLAYER_A, testMove.getAction(), 2);
+        verify(kafkaService).sendMove(testGame.getId(), PLAYER_B, testMove.getAction(), 2);
     }
 
     @Test
@@ -103,7 +103,6 @@ class GameServiceTest {
 
         assertAll(
                 () -> assertEquals(Mode.LOCAL, result.getMode()),
-                () -> assertEquals(Status.READY, result.getStatus()),
                 () -> assertEquals(START_VALUE, result.getMovements().get(0).getNumber()),
                 () -> assertNotEquals(PLAYER_A, result.getOpponentId())
         );
@@ -120,7 +119,6 @@ class GameServiceTest {
 
         assertAll(
                 () -> assertEquals(Mode.REMOTE, result.getMode()),
-                () -> assertEquals(Status.WAITING, result.getStatus()),
                 () -> assertEquals(START_VALUE, result.getMovements().get(0).getNumber()),
                 () -> assertEquals(PLAYER_A, result.getOpponentId())
         );

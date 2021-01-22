@@ -19,11 +19,10 @@ public class GameFactory {
                 .opponentId(opponent)
                 .playerId(player)
                 .movements(new LinkedList<>(List.of(createFirstMove(startValue, firstMovePlayer))))
-                .status(mode == Mode.REMOTE && opponent.equals(firstMovePlayer) ? Status.READY : Status.WAITING)
                 .build();
     }
 
-    public static List<GameOverviewElement> convertToGameView(List<Game> games) {
+    public static List<GameOverviewElement> convertToGameView(List<Game> games, String userId) {
        return games
                 .stream()
                 .map(game -> {
@@ -34,7 +33,7 @@ public class GameFactory {
                             .lastStep(lastMove.getAction())
                             .sequenceNumber(lastMove.getMovementSequenzNumber())
                             .number(lastMove.getNumber())
-                            .status(game.getStatus())
+                            .status(determineGameStatus(game, userId))
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -48,7 +47,7 @@ public class GameFactory {
 
         return GameMovements.builder()
                 .uuid(game.getId())
-                .status(game.getStatus())
+                .status(determineGameStatus(game, userId))
                 .movements(moves).build();
     }
 
@@ -75,11 +74,11 @@ public class GameFactory {
         return builder.build();
     }
 
-    public static Status determineGameStatus(Game game, String playerId) {
+    public static Status determineGameStatus(Game game, String userId) {
         Movement lastMovement = game.getMovements().get(game.getMovements().size() - 1);
 
         if (lastMovement.getNumber() <= 1) return Status.FINISHED;
-        if (lastMovement.getPlayerId().equals(playerId)) return Status.WAITING;
+        if (lastMovement.getPlayerId().equals(userId)) return Status.WAITING;
 
         return Status.READY;
     }

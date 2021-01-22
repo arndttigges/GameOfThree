@@ -25,7 +25,6 @@ public class Game implements Serializable {
     @Id
     UUID id;
 
-    Status status;
     @NotEmpty
     String playerId;
     @NotEmpty

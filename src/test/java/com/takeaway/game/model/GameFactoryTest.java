@@ -25,8 +25,7 @@ class GameFactoryTest {
                 () -> assertEquals(PLAYER_B, game.getMovements().get(0).getPlayerId()),
                 () -> assertEquals(START_VALUE, game.getMovements().get(0).getNumber()),
                 () -> assertEquals(GAME_MODE, game.getMode()),
-                () -> assertEquals(PLAYER_A, game.getOpponentId()),
-                () -> assertEquals(Status.WAITING, game.status)
+                () -> assertEquals(PLAYER_A, game.getOpponentId())
         );
     }
 
@@ -37,18 +36,6 @@ class GameFactoryTest {
         assertEquals(2, game.getMovements().size());
     }
 
-    @Test
-    void incomingRemoteGameIsInReadyStatus() {
-        Game game = GameFactory.createNewGame(Mode.REMOTE,PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
-        assertEquals(Status.READY, game.getStatus());
-    }
-
-    @Test
-    void outgoingRemoteGameIsInWaitingStatus() {
-        Game game = GameFactory.createNewGame(Mode.REMOTE,PLAYER_B, PLAYER_A, PLAYER_B, START_VALUE);
-        assertEquals(Status.WAITING, game.getStatus());
-    }
-
     @ParameterizedTest
     @CsvSource(value = {
             "A,1, FINISHED",
@@ -56,10 +43,10 @@ class GameFactoryTest {
             "A, 5, READY"
     })
     void determineGameStatusTest(String playerId, int number, Status result) {
-        Game game = GameFactory.createNewGame(null, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
+        Game game = GameFactory.createNewGame(null, playerId, PLAYER_B, PLAYER_A, START_VALUE);
         game.getMovements().add(Movement.builder().playerId(PLAYER_B).number(number).build());
 
-        Status status = GameFactory.determineGameStatus(game,playerId);
+        Status status = GameFactory.determineGameStatus(game, playerId);
         assertEquals(result, status);
     }
 }

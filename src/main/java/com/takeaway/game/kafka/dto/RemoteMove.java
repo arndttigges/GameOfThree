@@ -17,14 +17,12 @@ public class RemoteMove {
     @NotBlank
     private final UUID gameId;
 
-    private Action action;
+    private final Action action;
 
-    private int sequenznumber;
-
-    @NotEmpty
-    private String playerId;
+    private final int sequenznumber;
 
     @NotEmpty
-    private String opponentId;
+    private final String playerId;
+
 
 }
