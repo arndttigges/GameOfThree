@@ -36,9 +36,12 @@ class RuleEngineTest {
 
     @Test
     void createMovement() {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, 42);
+        Game game = GameFactory.createNewGame(Mode.REMOTE,PLAYER_B, PLAYER_A, PLAYER_B, 42);
         game.getMovements().get(0).setAction(Action.ZERO);
-        GameMove move = new GameMove(Action.ZERO, PLAYER_A);
+
+        GameMove move = new GameMove();
+        move.setPlayerId(PLAYER_A);
+        move.setAction(Action.ZERO);
 
         when(rule.isAllowedMove(game, move)).thenReturn(true);
         when(rule.calcNewValue(42, Action.ZERO)).thenReturn(14);
@@ -53,8 +56,10 @@ class RuleEngineTest {
 
     @Test
     void noValueIfMovementIsInvalid() {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, 42);
-        GameMove move = new GameMove(Action.ZERO, PLAYER_A);
+        Game game = GameFactory.createNewGame(Mode.REMOTE,PLAYER_B, PLAYER_A, PLAYER_B, 42);
+        GameMove move = new GameMove();
+        move.setPlayerId(PLAYER_A);
+        move.setAction(Action.ZERO);
 
         when(rule.isAllowedMove(game, move)).thenReturn(false);
         assertEquals(Optional.empty(), ruleEngine.executeMove(game, move));

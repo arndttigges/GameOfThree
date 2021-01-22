@@ -17,7 +17,8 @@ public class Invite {
     private final UUID gameId;
     @NotBlank
     private final String playerId;
-    private final String name;
+    @NotBlank
+    private final String opponentId;
     @Min(1)
     private final int startValue;
 

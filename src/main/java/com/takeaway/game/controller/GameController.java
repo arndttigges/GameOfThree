@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Map;
 import java.util.UUID;
@@ -53,10 +52,9 @@ public class GameController {
     }
 
     @GetMapping("/game/remote")
-    String announceAvailability(final HttpSession session,
-                                final Model model) {
+    String announceAvailability(final Model model) {
 
-        createReadyToPlayAnnouncement(session.getId());
+        createReadyToPlayAnnouncement(getSessionId());
         model.addAllAttributes(modelAttributesForMainPage());
         return "main";
     }
@@ -73,11 +71,11 @@ public class GameController {
 
         if (!bindingResult.hasErrors()) {
             Game game = gameService.createNewRemoteGame(newRemoteGame);
-            if(game != null) {
+            if (game != null) {
                 invitationService.deleteInvitation(newRemoteGame.getRemotePlayer());
                 kafkaService.sendInvite(game.getId(),
                         getSessionId(),
-                        getSessionId(),
+                        newRemoteGame.getRemotePlayer(),
                         game.getMovements().get(0).getNumber());
 
             }
@@ -88,10 +86,9 @@ public class GameController {
 
     @GetMapping("/game/{gameId}")
     String fetchGame(@PathVariable(name = "gameId") UUID gameId,
-                     final HttpSession session,
                      final Model model) {
         model.addAttribute("game", gameService.fetchGame(gameId));
-        model.addAttribute("playerId", session.getId());
+        model.addAttribute("playerId", getSessionId());
         model.addAttribute("gameMove", new GameMove());
         return "game";
     }
@@ -101,15 +98,15 @@ public class GameController {
     String play(@PathVariable(name = "gameId") UUID gameId,
                 @ModelAttribute @Valid GameMove gameMove,
                 final BindingResult bindingResult,
-                final HttpSession session,
                 final Model model) {
 
         if (bindingResult.hasErrors()) {
             model.addAttribute("game", gameService.fetchGame(gameId));
-            model.addAttribute("playerId", session.getId());
+            model.addAttribute("playerId", getSessionId());
         } else {
+            gameMove.setPlayerId(getSessionId());
             model.addAttribute("game", gameService.performMove(gameId, gameMove));
-            model.addAttribute("playerId", session.getId());
+            model.addAttribute("playerId", getSessionId());
             model.addAttribute("gameMove", new GameMove());
         }
 
@@ -118,7 +115,7 @@ public class GameController {
 
     private Map<String, Object> modelAttributesForMainPage() {
         return Map.of(
-                "playerId", getSessionId() ,
+                "playerId", getSessionId(),
                 "gameTemplate", new GameTemplate(),
                 "newRemoteGame", new NewRemoteGame(),
                 "games", gameService.getAllRunningGames(),

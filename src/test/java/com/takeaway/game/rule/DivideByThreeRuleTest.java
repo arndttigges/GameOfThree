@@ -29,16 +29,20 @@ class DivideByThreeRuleTest {
     })
     @ParameterizedTest
     void ruleIsCheckingNumberConditionCorrectly(int value, boolean result) {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, value);
-        GameMove move = new GameMove(Action.ZERO, PLAYER_A);
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, PLAYER_A, PLAYER_B, value);
+        GameMove move = new GameMove();
+        move.setPlayerId(PLAYER_A);
+        move.setAction(Action.ZERO);
 
         assertEquals(result, rule.isAllowedMove(game, move));
     }
 
     @Test
     void playerCanNotMakeAnotherMove() {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, 42);
-        GameMove move = new GameMove(Action.ZERO, PLAYER_B);
+        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, PLAYER_A, PLAYER_A, 42);
+        GameMove move = new GameMove();
+        move.setPlayerId(PLAYER_A);
+        move.setAction(Action.ZERO);
 
         assertFalse(rule.isAllowedMove(game, move));
     }

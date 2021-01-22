@@ -2,7 +2,10 @@ package com.takeaway.game.service;
 
 import com.takeaway.game.dto.*;
 import com.takeaway.game.kafka.KafkaService;
-import com.takeaway.game.model.*;
+import com.takeaway.game.model.Action;
+import com.takeaway.game.model.Game;
+import com.takeaway.game.model.Mode;
+import com.takeaway.game.model.Movement;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.RuleEngine;
 import lombok.AllArgsConstructor;
@@ -42,7 +45,12 @@ public class GameService {
             GameMove computerMove = createComputerMove();
             applyGameMove(currentGame, computerMove);
         } else {
-            kafkaService.sendMove(currentGame.getId(), action.getPlayerId(), action.getMove());
+            kafkaService.sendMove(
+                    currentGame.getId(),
+                    action.getPlayerId(),
+                    currentGame.getOpponentId(),
+                    action.getAction(),
+                    currentGame.getMovements().get(currentGame.getMovements().size() -1).getMovementSequenzNumber());
         }
         return convertGame(saveGame(currentGame));
     }
@@ -54,7 +62,10 @@ public class GameService {
 
     private GameMove createComputerMove() {
         Action computerAction = Arrays.stream(Action.values()).findAny().orElse(Action.ZERO);
-        return new GameMove(computerAction, "COMPUTER");
+        GameMove move = new GameMove();
+        move.setAction(computerAction);
+        move.setPlayerId("COMPUTER");
+        return move;
     }
 
     private GameMovements convertGame(Game game) {
@@ -62,7 +73,7 @@ public class GameService {
     }
 
     public Game createNewLocalGame(GameTemplate gameTemplate) {
-        Game localGame = GameFactory.createNewGame(Mode.LOCAL, "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
+        Game localGame = GameFactory.createNewGame(Mode.LOCAL, gameTemplate.getPlayerId(), "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
         applyGameMove(localGame, createComputerMove());
         return saveGame(localGame);
     }
@@ -72,27 +83,18 @@ public class GameService {
         return currentGame;
     }
 
-    Status determineGameStatus(Game game) {
-        Movement lastMovement = game.getMovements().get(game.getMovements().size() - 1);
-
-        if (lastMovement.getNumber() <= 1) return Status.FINISHED;
-        if (lastMovement.getPlayerId().equals(getSessionID())) return Status.WAITING;
-
-        return Status.READY;
-    }
-
     private String getSessionID() {
         return RequestContextHolder.currentRequestAttributes().getSessionId();
     }
 
     private Game saveGame(Game game) {
-        game.setStatus(determineGameStatus(game));
+        game.setStatus(GameFactory.determineGameStatus(game, getSessionID()));
         return gameRepository.save(game);
     }
 
     public Game createNewRemoteGame(NewRemoteGame newRemoteGame) {
         int startValue = newRemoteGame.getStartValue();
-        Game initRemoteGame = GameFactory.createNewGame(Mode.REMOTE, newRemoteGame.getRemotePlayer(), getSessionID(), startValue);
+        Game initRemoteGame = GameFactory.createNewGame(Mode.REMOTE, getSessionID(), newRemoteGame.getRemotePlayer(), getSessionID(), startValue);
         return gameRepository.save(initRemoteGame);
     }
 }

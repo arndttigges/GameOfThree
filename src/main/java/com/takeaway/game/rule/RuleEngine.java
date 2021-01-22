@@ -24,13 +24,13 @@ public class RuleEngine {
         if (rule.isAllowedMove(game, gameMove)) {
             Movement lastMovement = getLastMovement(game);
 
-            int newValue = rule.calcNewValue(lastMovement.getNumber(), gameMove.getMove());
+            int newValue = rule.calcNewValue(lastMovement.getNumber(), gameMove.getAction());
             int newSequenceNumber = lastMovement.getMovementSequenzNumber() + 1;
-            Action newAction = gameMove.getMove();
+            Action newAction = gameMove.getAction();
 
             return Optional.of(Movement.builder()
                     .action(newAction)
-                    .playerId(game.getOpponentId())
+                    .playerId(gameMove.getPlayerId())
                     .number(newValue)
                     .movementSequenzNumber(newSequenceNumber)
                     .build());

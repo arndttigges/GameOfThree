@@ -2,8 +2,11 @@ package com.takeaway.game.model;
 
 import com.takeaway.game.service.GameFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.lenient;
 
 class GameFactoryTest {
 
@@ -15,7 +18,7 @@ class GameFactoryTest {
 
     @Test
     void createValidNewGame() {
-        Game game = GameFactory.createNewGame(GAME_MODE, PLAYER_A, PLAYER_B, START_VALUE);
+        Game game = GameFactory.createNewGame(GAME_MODE,PLAYER_B, PLAYER_A, PLAYER_B, START_VALUE);
         assertAll(
                 () -> assertFalse(game.getMovements().isEmpty()),
                 () -> assertEquals(1, game.getMovements().get(0).getMovementSequenzNumber()),
@@ -29,20 +32,34 @@ class GameFactoryTest {
 
     @Test
     void movementListCanBeModified() {
-        Game game = GameFactory.createNewGame(GAME_MODE, PLAYER_A, PLAYER_B, START_VALUE);
+        Game game = GameFactory.createNewGame(GAME_MODE,PLAYER_B, PLAYER_A, PLAYER_B, START_VALUE);
         game.getMovements().add(Movement.builder().build());
         assertEquals(2, game.getMovements().size());
     }
 
     @Test
     void incomingRemoteGameIsInReadyStatus() {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_A, START_VALUE);
+        Game game = GameFactory.createNewGame(Mode.REMOTE,PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
         assertEquals(Status.READY, game.getStatus());
     }
 
     @Test
     void outgoingRemoteGameIsInWaitingStatus() {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, START_VALUE);
+        Game game = GameFactory.createNewGame(Mode.REMOTE,PLAYER_B, PLAYER_A, PLAYER_B, START_VALUE);
         assertEquals(Status.WAITING, game.getStatus());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "A,1, FINISHED",
+            "B, 5, WAITING",
+            "A, 5, READY"
+    })
+    void determineGameStatusTest(String playerId, int number, Status result) {
+        Game game = GameFactory.createNewGame(null, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
+        game.getMovements().add(Movement.builder().playerId(PLAYER_B).number(number).build());
+
+        Status status = GameFactory.determineGameStatus(game,playerId);
+        assertEquals(result, status);
     }
 }

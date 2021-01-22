@@ -51,8 +51,8 @@ public class KafkaService {
         }
     }
 
-    public void sendInvite(UUID id, String playerId, String name, int startValue) {
-        Invite invite = new Invite(id, playerId, name, startValue);
+    public void sendInvite(UUID id, String playerId, String opponent, int startValue) {
+        Invite invite = new Invite(id, playerId, opponent, startValue);
         inviteKafkaTemplate.send(INVITE_GAME_TOPIC, invite);
     }
 
@@ -60,14 +60,14 @@ public class KafkaService {
     public void listenToInvites(String inviteString) throws JsonProcessingException {
         Invite invite = mapper.readValue(inviteString, Invite.class);
 
-        Game game = GameFactory.createNewGame(Mode.REMOTE, invite.getPlayerId(), invite.getPlayerId(), invite.getStartValue());
+        Game game = GameFactory.createNewGame(
+                Mode.REMOTE, invite.getOpponentId(), invite.getPlayerId(), invite.getPlayerId(), invite.getStartValue());
         game.setId(invite.getGameId());
         gameRepository.save(game);
-        System.out.println("Received Message in group: " + invite);
     }
 
-    public void sendMove(UUID gameID, String playerId, Action action) {
-        RemoteMove remoteMove = new RemoteMove(gameID, action, playerId);
+    public void sendMove(UUID gameID, String playerId, String opponentId, Action action, int sequenznumber) {
+        RemoteMove remoteMove = new RemoteMove(gameID, action, sequenznumber, playerId, opponentId);
         moveKafkaTemplate.send(MOVE_GAME_TOPIC, remoteMove);
     }
 
@@ -75,12 +75,18 @@ public class KafkaService {
     public void listenToMoves(String moveString) throws JsonProcessingException {
         RemoteMove move = mapper.readValue(moveString, RemoteMove.class);
 
-        gameRepository.findById(move.getGameId()).ifPresent(game -> {
-            GameMove gameMove = new GameMove(move.getAction(), move.getPlayerId());
-            ruleEngine.executeMove(game, gameMove).ifPresent(
-                    movement -> game.getMovements().add(movement)
-            );
-            gameRepository.save(game);
+        gameRepository.findById(move.getGameId())
+                .ifPresent(game -> {
+                    if(game.getMovements().get(game.getMovements().size() -1).getMovementSequenzNumber() != move.getSequenznumber()) {
+                        GameMove gameMove = new GameMove();
+                        gameMove.setAction(move.getAction());
+                        gameMove.setPlayerId(move.getPlayerId());
+                        ruleEngine.executeMove(game, gameMove).ifPresent(
+                                movement -> game.getMovements().add(movement)
+                        );
+                        game.setStatus(GameFactory.determineGameStatus(game, game.getOpponentId()));
+                        gameRepository.save(game);
+                    }
         });
     }
 }

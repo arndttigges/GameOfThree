@@ -5,6 +5,7 @@ import lombok.*;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.util.*;
 
@@ -21,11 +22,13 @@ import static javax.persistence.CascadeType.ALL;
 @Builder
 @Transactional
 public class Game implements Serializable {
-
     @Id
     UUID id;
 
     Status status;
+    @NotEmpty
+    String playerId;
+    @NotEmpty
     String opponentId;
     Mode mode;
 

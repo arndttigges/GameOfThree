@@ -19,7 +19,12 @@ public class RemoteMove {
 
     private Action action;
 
+    private int sequenznumber;
+
     @NotEmpty
     private String playerId;
+
+    @NotEmpty
+    private String opponentId;
 
 }

@@ -12,11 +12,12 @@ import java.util.stream.Collectors;
 
 public class GameFactory {
 
-    public static Game createNewGame(Mode mode, String opponent, String firstMovePlayer, int startValue) {
+    public static Game createNewGame(Mode mode, String player, String opponent, String firstMovePlayer, int startValue) {
         return Game.builder()
                 .id(UUID.randomUUID())
                 .mode(mode)
                 .opponentId(opponent)
+                .playerId(player)
                 .movements(new LinkedList<>(List.of(createFirstMove(startValue, firstMovePlayer))))
                 .status(mode == Mode.REMOTE && opponent.equals(firstMovePlayer) ? Status.READY : Status.WAITING)
                 .build();
@@ -45,7 +46,10 @@ public class GameFactory {
                 .map(movement -> convertMovementToMove(movement, userId))
                 .collect(Collectors.toList());
 
-        return GameMovements.builder().uuid(game.getId()).status(game.getStatus()).movements(moves).build();
+        return GameMovements.builder()
+                .uuid(game.getId())
+                .status(game.getStatus())
+                .movements(moves).build();
     }
 
     private static Movement createFirstMove(int startValue, String player) {
@@ -71,5 +75,13 @@ public class GameFactory {
         return builder.build();
     }
 
+    public static Status determineGameStatus(Game game, String playerId) {
+        Movement lastMovement = game.getMovements().get(game.getMovements().size() - 1);
+
+        if (lastMovement.getNumber() <= 1) return Status.FINISHED;
+        if (lastMovement.getPlayerId().equals(playerId)) return Status.WAITING;
+
+        return Status.READY;
+    }
 
 }

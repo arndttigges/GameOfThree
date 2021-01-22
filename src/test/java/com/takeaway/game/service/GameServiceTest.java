@@ -48,8 +48,10 @@ class GameServiceTest {
 
     @Test
     void doingLocalMove() {
-        Game testGame = GameFactory.createNewGame(Mode.LOCAL, PLAYER_A, PLAYER_A, START_VALUE);
-        GameMove testMove = new GameMove(Action.ZERO, PLAYER_B);
+        Game testGame = GameFactory.createNewGame(Mode.LOCAL, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
+        GameMove testMove = new GameMove();
+        testMove.setPlayerId(PLAYER_B);
+        testMove.setAction(Action.ZERO);
 
         when(ruleEngine.executeMove(any(Game.class), any(GameMove.class)))
                 .thenReturn(Optional.of(createTestMovement(PLAYER_B, 7)));
@@ -65,13 +67,15 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine, times(2)).executeMove(any(Game.class), any(GameMove.class));
-        verify(kafkaService, times(0)).sendMove(testGame.getId(), PLAYER_B, testMove.getMove());
+        verify(kafkaService, times(0)).sendMove(testGame.getId(), PLAYER_B, PLAYER_A, testMove.getAction(),2);
     }
 
     @Test
     void doingRemoteMove() {
-        Game testGame = GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_A, START_VALUE);
-        GameMove testMove = new GameMove(Action.ZERO, PLAYER_B);
+        Game testGame = GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
+        GameMove testMove = new GameMove();
+        testMove.setPlayerId(PLAYER_B);
+        testMove.setAction(Action.ZERO);
 
         when(ruleEngine.executeMove(testGame, testMove))
                 .thenReturn(Optional.of(createTestMovement(PLAYER_B, 7)));
@@ -87,7 +91,7 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine).executeMove(testGame, testMove);
-        verify(kafkaService).sendMove(testGame.getId(), PLAYER_B, testMove.getMove());
+        verify(kafkaService).sendMove(testGame.getId(), PLAYER_B, PLAYER_A, testMove.getAction(), 2);
     }
 
     @Test
@@ -122,22 +126,6 @@ class GameServiceTest {
         );
 
         verify(gameRepository).save(any(Game.class));
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = {
-            "A,1, FINISHED",
-            "PLAYER_B, 5, WAITING",
-            "A, 5, READY"
-    })
-    void determineGameStatusTest(String sessionId, int number, Status result) {
-        Game game = GameFactory.createNewGame(null, PLAYER_A, PLAYER_A, START_VALUE);
-        game.getMovements().add(createTestMovement(PLAYER_B, number));
-
-        lenient().when(requestAttributes.getSessionId()).thenReturn(sessionId);
-
-        Status status = gameService.determineGameStatus(game);
-        assertEquals(result, status);
     }
 
     private Movement createTestMovement(String playerId, int number) {
