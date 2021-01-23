@@ -6,10 +6,6 @@ spring:
     hibernate:
       dialect: org.hibernate.dialect.H2Dialect
       ddl-auto: create-drop
-
-  session:
-    timeout:
-      seconds: 9000
 server:
   port: 0
 kafka:
@@ -20,13 +16,16 @@ kafka:
     move: MOVE
 
 ---
-spring:
-  profiles: A
 server:
   port: 8081
-
----
 spring:
-  profiles: B
+  config:
+    activate:
+      on-profile: A
+---
 server:
   port: 8082
+spring:
+  config:
+    activate:
+      on-profile: B
