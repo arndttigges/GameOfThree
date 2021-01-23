@@ -49,7 +49,7 @@ public class GameService {
                     currentGame.getId(),
                     getSessionID(),
                     action.getAction(),
-                    currentGame.getMovements().get(currentGame.getMovements().size() -1).getMovementSequenzNumber());
+                    currentGame.getMovements().get(currentGame.getMovements().size() -1 ).getMovementSequenzNumber());
         }
         return convertGame(gameRepository.save(currentGame));
     }
@@ -72,7 +72,7 @@ public class GameService {
     }
 
     public Game createNewLocalGame(GameTemplate gameTemplate) {
-        Game localGame = GameFactory.createNewGame(Mode.LOCAL, gameTemplate.getPlayerId(), "COMPUTER", gameTemplate.getPlayerId(), gameTemplate.getStartValue());
+        Game localGame = GameFactory.createNewGame(Mode.LOCAL, getSessionID(), "COMPUTER", getSessionID(), gameTemplate.getStartValue());
         applyGameMove(localGame, createComputerMove());
         return gameRepository.save(localGame);
     }

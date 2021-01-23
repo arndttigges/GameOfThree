@@ -8,6 +8,7 @@ import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.RuleEngine;
+import org.apache.kafka.common.quota.ClientQuotaAlteration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,6 +20,7 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -47,6 +49,20 @@ class GameServiceTest {
     }
 
     @Test
+    void fetchGame() {
+        Game game = GameFactory.createNewGame(Mode.LOCAL, PLAYER_A, PLAYER_B, PLAYER_A, START_VALUE );
+        when(gameRepository.findById(any(UUID.class))).thenReturn(
+                Optional.of(game));
+        GameMovements gameMovements = gameService.fetchGame(game.getId());
+
+        assertAll(
+                () -> assertEquals(game.getId(),gameMovements.getUuid()),
+                () -> assertEquals(Status.READY, gameMovements.getStatus()),
+                () -> assertEquals(1, gameMovements.getMovements().size())
+        );
+    }
+
+    @Test
     void doingLocalMove() {
         Game testGame = GameFactory.createNewGame(Mode.LOCAL, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
         GameMove testMove = new GameMove();
@@ -67,7 +83,7 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine, times(2)).executeMove(any(Game.class), any(GameMove.class));
-        verify(kafkaService, times(0)).sendMove(testGame.getId(), PLAYER_B, testMove.getAction(),2);
+        verify(kafkaService, times(0)).sendMove(any(UUID.class), anyString(), any(Action.class), anyInt());
     }
 
     @Test
@@ -91,14 +107,14 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine).executeMove(testGame, testMove);
-        verify(kafkaService).sendMove(testGame.getId(), PLAYER_B, testMove.getAction(), 2);
+        verify(kafkaService).sendMove(any(UUID.class), anyString(), any(Action.class), anyInt());
     }
 
     @Test
     void createAValidNewLocalGame() {
         when(gameRepository.save(any(Game.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        GameTemplate game = new GameTemplate(PLAYER_A, START_VALUE);
+        GameTemplate game = new GameTemplate(START_VALUE);
         Game result = gameService.createNewLocalGame(game);
 
         assertAll(

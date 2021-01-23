@@ -42,9 +42,7 @@ public class GameController {
                         final Model model) {
 
         if (!bindingResult.hasErrors()) {
-            Game createdGame = gameService.createNewLocalGame(gameTemplate);
-            Announcement announcement = new Announcement(gameTemplate.getPlayerId(), gameTemplate.getPlayerId());
-            kafkaService.sendAnnouncement(announcement);
+            gameService.createNewLocalGame(gameTemplate);
             model.addAttribute("gameTemplate", gameTemplate);
         }
         model.addAllAttributes(modelAttributesForMainPage());
@@ -53,15 +51,10 @@ public class GameController {
 
     @GetMapping("/game/remote")
     String announceAvailability(final Model model) {
+        kafkaService.sendAnnouncement(new Announcement(getSessionId()));
 
-        createReadyToPlayAnnouncement(getSessionId());
         model.addAllAttributes(modelAttributesForMainPage());
         return "main";
-    }
-
-    private void createReadyToPlayAnnouncement(String name) {
-        Announcement announcement = new Announcement(getSessionId(), name);
-        kafkaService.sendAnnouncement(announcement);
     }
 
     @PostMapping("/game/remote/new")
@@ -87,6 +80,7 @@ public class GameController {
     @GetMapping("/game/{gameId}")
     String fetchGame(@PathVariable(name = "gameId") UUID gameId,
                      final Model model) {
+
         model.addAttribute("game", gameService.fetchGame(gameId));
         model.addAttribute("playerId", getSessionId());
         model.addAttribute("gameMove", new GameMove());

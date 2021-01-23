@@ -13,5 +13,6 @@ import javax.validation.constraints.NotNull;
 public class GameMove {
     @NotNull
     private Action action;
+    @NotNull
     private String playerId;
 }

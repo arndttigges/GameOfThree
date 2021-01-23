@@ -14,8 +14,6 @@ import javax.validation.constraints.Min;
 @Getter
 public class GameTemplate {
 
-    private String playerId;
-
     @Min(1)
     @Max(Integer.MAX_VALUE)
     private int startValue = 42;

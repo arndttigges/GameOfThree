@@ -29,9 +29,7 @@ public class KafkaService {
     private static final String INVITE_GAME_TOPIC = "INVITE";
     private static final String MOVE_GAME_TOPIC = "MOVE";
 
-    private final KafkaTemplate<String, Announcement> announcementTemplate;
-    private final KafkaTemplate<String, Invite> inviteKafkaTemplate;
-    private final KafkaTemplate<String, RemoteMove> moveKafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private final InvitationRepository invitationRepository;
     private final GameRepository gameRepository;
@@ -40,7 +38,7 @@ public class KafkaService {
     private final ObjectMapper mapper;
 
     public void sendAnnouncement(Announcement announcement) {
-        announcementTemplate.send(READY_FOR_GAME_TOPIC, announcement);
+        kafkaTemplate.send(READY_FOR_GAME_TOPIC, announcement);
     }
 
     @KafkaListener(topics = READY_FOR_GAME_TOPIC, groupId = "#{T(java.util.UUID).randomUUID().toString()}")
@@ -53,7 +51,7 @@ public class KafkaService {
 
     public void sendInvite(UUID id, String playerId, String opponent, int startValue) {
         Invite invite = new Invite(id, playerId, opponent, startValue);
-        inviteKafkaTemplate.send(INVITE_GAME_TOPIC, invite);
+        kafkaTemplate.send(INVITE_GAME_TOPIC, invite);
     }
 
     @KafkaListener(topics = "INVITE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
@@ -68,7 +66,7 @@ public class KafkaService {
 
     public void sendMove(UUID gameID, String playerId, Action action, int sequenznumber) {
         RemoteMove remoteMove = new RemoteMove(gameID, action, sequenznumber, playerId);
-        moveKafkaTemplate.send(MOVE_GAME_TOPIC, remoteMove);
+        kafkaTemplate.send(MOVE_GAME_TOPIC, remoteMove);
     }
 
     @KafkaListener(topics = "MOVE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")

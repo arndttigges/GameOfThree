@@ -1,9 +1,13 @@
 package com.takeaway.game.model;
 
+import com.takeaway.game.dto.GameOverviewElement;
+import com.takeaway.game.dto.Move;
 import com.takeaway.game.service.GameFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.lenient;
@@ -34,6 +38,33 @@ class GameFactoryTest {
         Game game = GameFactory.createNewGame(GAME_MODE,PLAYER_B, PLAYER_A, PLAYER_B, START_VALUE);
         game.getMovements().add(Movement.builder().build());
         assertEquals(2, game.getMovements().size());
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "A, B, ZERO, 2, 1, FINISHED",
+            "B, A, PLUS, 3, 32, READY"
+    })
+    void determineGameStatusTest(String player, String opponent, Action lastAction, int sequenceNumber, int value, Status status) {
+        List<Game> gameList = List.of(
+                GameFactory.createNewGame(Mode.LOCAL, player, opponent, PLAYER_A, START_VALUE)
+        );
+        Movement movement = Movement.builder().playerId(PLAYER_B).movementSequenzNumber(sequenceNumber).action(lastAction).number(value).build();
+        Game game = gameList.get(0);
+        game.getMovements().add(movement);
+        List<GameOverviewElement> overviewElements = GameFactory.convertToGameView(gameList, PLAYER_A);
+
+
+        GameOverviewElement element = overviewElements.get(0);
+        assertAll(
+                () -> assertEquals(game.getId(), element.getUuid()),
+                () -> assertEquals(opponent, element.getOpponent()),
+                () -> assertEquals(lastAction, element.getLastStep()),
+                () -> assertEquals(value, element.getNumber()),
+                () -> assertEquals(sequenceNumber, element.getSequenceNumber()),
+                () -> assertEquals(status, element.getStatus())
+        );
+
     }
 
     @ParameterizedTest

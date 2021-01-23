@@ -13,6 +13,5 @@ public class Announcement {
 
     @NotBlank
     private final String playerId;
-    private final String name;
 
 }
