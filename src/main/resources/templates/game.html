@@ -16,69 +16,84 @@
     <div class="container-md">
         <h1>Game Of Three - Movements</h1>
 
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <div class="p-3 border bg-light">Current State:
+                        <span th:text="${game.status}"></span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="p-3 border bg-light">Winner:
+                        <span>the Bank></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
         <div class="form-group">
-        <div class="row">
-            <div class="container px-4">
-                <div class="row gx-5">
-                    <div class="col">
-                        <div class="p-3 border bg-light">Current State:
-                            <span th:text="${game.status}"></span>
+            <div class="row">
+                <div class="container px-4">
+                    <table class="table table-hover table-striped" id="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Sequence</th>
+                            <th scope="col">You</th>
+                            <th scope="col">New Value</th>
+                            <th scope="col">Opponent</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <th:block th:each="movement : ${game.movements}">
+                            <tr>
+                                <td th:text="${movement.sequenceNumber}">...</td>
+                                <td th:text="${movement.myAction}">...</td>
+                                <td th:text="${movement.number}">...</td>
+                                <td th:text="${movement.opponentAction}">...</td>
+                            </tr>
+                        </th:block>
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row justify-content-around">
+                <div class="col-3">
+                    <a class="btn btn-outline-info" href="/" role="button">Back to Main Page</a>
+                </div>
+                <div class="col-md-auto bg-light">
+                    <div class="form-group">
+                        <div th:if="${game.status == T(com.takeaway.game.model.Status).READY}">
+                            <div class="row">
+                                <div class="container-md">
+                                    <form action="#" th:action="@{/game/__${game.uuid.toString()}__}"
+                                          th:object="${gameMove}" method="post">
+                                        <div class="form-check form-check-inline"
+                                             th:each="action : ${T(com.takeaway.game.model.Action).values()}">
+                                            <input class="form-check-input" type="radio" th:field="*{action}"
+                                                   th:value="${action}">
+                                            <label class="form-check-label" th:for="${#ids.prev('action')}"
+                                                   th:text="${action.name}">model</label>
+                                        </div>
+                                        <input type="hidden" th:value="${playerId}" name="playerId"/>
+                                        <div class="justify-content-end">
+                                            <button type="submit" class="btn btn-primary">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        </div>
-
-        <div class="form-group">
-        <div class="row">
-            <div class="container px-4">
-            <table class="table table-hover table-striped" id="table">
-                <thead>
-                <tr>
-                    <th scope="col">Sequence</th>
-                    <th scope="col">You</th>
-                    <th scope="col">New Value</th>
-                    <th scope="col">Opponent</th>
-                </tr>
-                </thead>
-                <tbody>
-                <th:block th:each="movement : ${game.movements}">
-                    <tr>
-                        <td th:text="${movement.sequenceNumber}">...</td>
-                        <td th:text="${movement.myAction}">...</td>
-                        <td th:text="${movement.number}">...</td>
-                        <td th:text="${movement.opponentAction}">...</td>
-                    </tr>
-                </th:block>
-                </tbody>
-
-            </table>
-        </div>
-        </div>
-        </div>
-
-        <div class="form-group">
-            <div th:if="${game.status == T(com.takeaway.game.model.Status).READY}">
-                <div class="row">
-                    <div class="container-md">
-                        <form action="#" th:action="@{/game/__${game.uuid}__}" th:object="${gameMove}" method="post">
-                            <div th:each="action : ${T(com.takeaway.game.model.Action).values()}">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" th:field="*{action}" th:value="${action}">
-                                    <label class="form-check-label"th:for="${#ids.prev('action')}" th:text="${action.value}">model</label>
-                                </div>
-                            </div>
-                            <input type="hidden" th:value="${playerId}" name="playerId" />
-                            <button type="submit" class="btn btn-primary">Submit</button>
-                        </form>
-                    </div>
+                <div class="col-3">
+                    <a class="btn btn-outline-info" th:href="@{/game/__${game.uuid}__}" role="button">refresh page</a>
                 </div>
             </div>
         </div>
-
-        <a class="btn btn-outline-info" th:href="@{/game/__${game.uuid}__}" role="button">refresh</a>
-        <a class="btn btn-outline-info" href="/" role="button">back</a>
     </div>
 </div>
 
