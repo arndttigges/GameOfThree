@@ -4,8 +4,6 @@ import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.dto.NewRemoteGame;
-import com.takeaway.game.kafka.KafkaService;
-import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.RuleEngine;
@@ -33,8 +31,6 @@ class GameServiceTest {
     @Mock
     GameRepository gameRepository;
     @Mock
-    KafkaService kafkaService;
-    @Mock
     RuleEngine ruleEngine;
     GameService gameService;
     @Mock
@@ -42,7 +38,7 @@ class GameServiceTest {
 
     @BeforeEach
     void init() {
-        gameService = new GameService(gameRepository, kafkaService, ruleEngine);
+        gameService = new GameService(gameRepository, ruleEngine);
         RequestContextHolder.setRequestAttributes(requestAttributes);
     }
 
@@ -68,7 +64,7 @@ class GameServiceTest {
         testMove.setAction(Action.ZERO);
 
         when(ruleEngine.executeMove(any(Game.class), any(GameMove.class)))
-                .thenReturn(Optional.of(createTestMovement(PLAYER_B, 7)));
+                .thenReturn(Optional.of(createTestMovement()));
         when(gameRepository.save(testGame)).thenReturn(testGame);
         when(requestAttributes.getSessionId()).thenReturn(PLAYER_A);
 
@@ -81,7 +77,6 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine, times(2)).executeMove(any(Game.class), any(GameMove.class));
-        verify(kafkaService, times(0)).sendMove(any(RemoteMove.class));
     }
 
     @Test
@@ -92,7 +87,7 @@ class GameServiceTest {
         testMove.setAction(Action.ZERO);
 
         when(ruleEngine.executeMove(testGame, testMove))
-                .thenReturn(Optional.of(createTestMovement(PLAYER_B, 7)));
+                .thenReturn(Optional.of(createTestMovement()));
         when(gameRepository.save(testGame)).thenReturn(testGame);
         when(requestAttributes.getSessionId()).thenReturn(PLAYER_B);
 
@@ -105,7 +100,6 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine).executeMove(testGame, testMove);
-        verify(kafkaService).sendMove(any(RemoteMove.class));
     }
 
     @Test
@@ -140,8 +134,8 @@ class GameServiceTest {
         verify(gameRepository).save(any(Game.class));
     }
 
-    private Movement createTestMovement(String playerId, int number) {
-        return Movement.builder().playerId(playerId).number(number).build();
+    private Movement createTestMovement() {
+        return Movement.builder().playerId(PLAYER_B).number(7).build();
     }
 
 }

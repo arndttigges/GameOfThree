@@ -1,8 +1,6 @@
 package com.takeaway.game.service;
 
 import com.takeaway.game.dto.*;
-import com.takeaway.game.kafka.KafkaService;
-import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Mode;
@@ -23,11 +21,14 @@ import java.util.UUID;
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final KafkaService kafkaService;
     private final RuleEngine ruleEngine;
 
     public List<GameOverviewElement> getAllRunningGames() {
-        return GameFactory.convertToGameView(gameRepository.findAll(), getSessionID());
+        return GameFactory.convertToGameView(gameRepository.findAll(), getSessionId());
+    }
+
+    public Optional<Game> getGameByUUID(UUID gameId) {
+        return gameRepository.findById(gameId);
     }
 
     public GameMovements fetchGame(UUID gameId) {
@@ -45,12 +46,10 @@ public class GameService {
         if (currentGame.getMode() == Mode.LOCAL) {
             GameMove computerMove = createComputerMove();
             applyGameMove(currentGame, computerMove);
-        } else {
-            RemoteMove remoteMove = new RemoteMove(currentGame.getId(), action.getAction(), currentGame.getMovements().get(currentGame.getMovements().size() - 1).getMovementSequenzNumber(), getSessionID());
-            kafkaService.sendMove(remoteMove);
         }
         return convertGame(gameRepository.save(currentGame));
     }
+
 
     private void applyGameMove(Game currentGame, GameMove action) {
         ruleEngine.executeMove(currentGame, action)
@@ -66,11 +65,11 @@ public class GameService {
     }
 
     private GameMovements convertGame(Game game) {
-        return GameFactory.createDetailedGameFromGame(game, getSessionID());
+        return GameFactory.createDetailedGameFromGame(game, getSessionId());
     }
 
     public Game createNewLocalGame(GameTemplate gameTemplate) {
-        Game localGame = GameFactory.createNewGame(Mode.LOCAL, getSessionID(), "COMPUTER", getSessionID(), gameTemplate.getStartValue());
+        Game localGame = GameFactory.createNewGame(Mode.LOCAL, getSessionId(), "COMPUTER", getSessionId(), gameTemplate.getStartValue());
         applyGameMove(localGame, createComputerMove());
         return gameRepository.save(localGame);
     }
@@ -80,13 +79,13 @@ public class GameService {
         return currentGame;
     }
 
-    private String getSessionID() {
+    private String getSessionId() {
         return RequestContextHolder.currentRequestAttributes().getSessionId();
     }
 
     public Game createNewRemoteGame(NewRemoteGame newRemoteGame) {
         int startValue = newRemoteGame.getStartValue();
-        Game initRemoteGame = GameFactory.createNewGame(Mode.REMOTE, getSessionID(), newRemoteGame.getRemotePlayer(), getSessionID(), startValue);
+        Game initRemoteGame = GameFactory.createNewGame(Mode.REMOTE, getSessionId(), newRemoteGame.getRemotePlayer(), getSessionId(), startValue);
         return gameRepository.save(initRemoteGame);
     }
 }

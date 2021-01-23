@@ -135,7 +135,7 @@
                                 <table class="table table-hover table-striped" id="gamers">
                                     <thead>
                                     <tr>
-                                        <th scope="col">Game Id</th>
+                                        <th scope="col">Opponent</th>
                                         <th scope="col">Sequence number</th>
                                         <th scope="col">Value</th>
                                         <th scope="col">Last Step</th>
@@ -146,14 +146,12 @@
                                     <tbody>
                                     <th:block th:each="game : ${games}">
                                         <tr>
-
                                             <td th:text="${game.opponent}">...</td>
                                             <td th:text="${game.sequenceNumber}">...</td>
                                             <td th:text="${game.number}">...</td>
                                             <td th:text="${game.lastStep}">...</td>
                                             <td th:text="${game.status}">...</td>
-                                            <td><a th:href="${'/game/' + game.uuid}"/>Play</a></td>
-
+                                            <td><a th:href="${'/game/' + game.uuid.toString()}"/>Play</a></td>
                                         </tr>
                                     </th:block>
                                     </tbody>

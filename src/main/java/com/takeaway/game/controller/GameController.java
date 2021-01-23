@@ -1,12 +1,16 @@
 package com.takeaway.game.controller;
 
 import com.takeaway.game.dto.GameMove;
+import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.dto.NewRemoteGame;
 import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.kafka.dto.Invite;
+import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.Game;
+import com.takeaway.game.model.Mode;
+import com.takeaway.game.model.Movement;
 import com.takeaway.game.service.GameService;
 import com.takeaway.game.service.InvitationService;
 import lombok.AllArgsConstructor;
@@ -97,12 +101,29 @@ public class GameController {
             model.addAttribute("playerId", getSessionId());
         } else {
             gameMove.setPlayerId(getSessionId());
-            model.addAttribute("game", gameService.performMove(gameId, gameMove));
+            GameMovements gameMovements = gameService.performMove(gameId, gameMove);
+            sendRemoteMove(gameMovements.getUuid());
+            model.addAttribute("game", gameMovements);
             model.addAttribute("playerId", getSessionId());
             model.addAttribute("gameMove", new GameMove());
         }
 
         return "game";
+    }
+
+    private void sendRemoteMove(UUID gameID) {
+        gameService.getGameByUUID(gameID).ifPresent(game -> {
+                    if (Mode.REMOTE == game.getMode()) {
+                        Movement movement = game.getMovements().get(game.getMovements().size() - 1);
+
+                        RemoteMove remoteMove = new RemoteMove(game.getId(),
+                                movement.getAction(),
+                                movement.getMovementSequenzNumber(),
+                                getSessionId());
+                        kafkaService.sendMove(remoteMove);
+                    }
+                }
+        );
     }
 
     private Map<String, Object> modelAttributesForMainPage() {
