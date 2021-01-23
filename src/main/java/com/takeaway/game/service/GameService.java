@@ -2,6 +2,7 @@ package com.takeaway.game.service;
 
 import com.takeaway.game.dto.*;
 import com.takeaway.game.kafka.KafkaService;
+import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Mode;
@@ -45,11 +46,8 @@ public class GameService {
             GameMove computerMove = createComputerMove();
             applyGameMove(currentGame, computerMove);
         } else {
-            kafkaService.sendMove(
-                    currentGame.getId(),
-                    getSessionID(),
-                    action.getAction(),
-                    currentGame.getMovements().get(currentGame.getMovements().size() -1 ).getMovementSequenzNumber());
+            RemoteMove remoteMove = new RemoteMove(currentGame.getId(), action.getAction(), currentGame.getMovements().get(currentGame.getMovements().size() - 1).getMovementSequenzNumber(), getSessionID());
+            kafkaService.sendMove(remoteMove);
         }
         return convertGame(gameRepository.save(currentGame));
     }

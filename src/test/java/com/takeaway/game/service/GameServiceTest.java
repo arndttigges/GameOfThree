@@ -5,15 +5,13 @@ import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.dto.NewRemoteGame;
 import com.takeaway.game.kafka.KafkaService;
+import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.RuleEngine;
-import org.apache.kafka.common.quota.ClientQuotaAlteration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestAttributes;
@@ -50,13 +48,13 @@ class GameServiceTest {
 
     @Test
     void fetchGame() {
-        Game game = GameFactory.createNewGame(Mode.LOCAL, PLAYER_A, PLAYER_B, PLAYER_A, START_VALUE );
+        Game game = GameFactory.createNewGame(Mode.LOCAL, PLAYER_A, PLAYER_B, PLAYER_A, START_VALUE);
         when(gameRepository.findById(any(UUID.class))).thenReturn(
                 Optional.of(game));
         GameMovements gameMovements = gameService.fetchGame(game.getId());
 
         assertAll(
-                () -> assertEquals(game.getId(),gameMovements.getUuid()),
+                () -> assertEquals(game.getId(), gameMovements.getUuid()),
                 () -> assertEquals(Status.READY, gameMovements.getStatus()),
                 () -> assertEquals(1, gameMovements.getMovements().size())
         );
@@ -83,7 +81,7 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine, times(2)).executeMove(any(Game.class), any(GameMove.class));
-        verify(kafkaService, times(0)).sendMove(any(UUID.class), anyString(), any(Action.class), anyInt());
+        verify(kafkaService, times(0)).sendMove(any(RemoteMove.class));
     }
 
     @Test
@@ -107,7 +105,7 @@ class GameServiceTest {
 
         verify(gameRepository).save(testGame);
         verify(ruleEngine).executeMove(testGame, testMove);
-        verify(kafkaService).sendMove(any(UUID.class), anyString(), any(Action.class), anyInt());
+        verify(kafkaService).sendMove(any(RemoteMove.class));
     }
 
     @Test

@@ -5,6 +5,7 @@ import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.dto.NewRemoteGame;
 import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.kafka.dto.Announcement;
+import com.takeaway.game.kafka.dto.Invite;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.service.GameService;
 import com.takeaway.game.service.InvitationService;
@@ -52,8 +53,8 @@ public class GameController {
     @GetMapping("/game/remote")
     String announceAvailability(final Model model) {
         kafkaService.sendAnnouncement(new Announcement(getSessionId()));
-
         model.addAllAttributes(modelAttributesForMainPage());
+
         return "main";
     }
 
@@ -66,11 +67,8 @@ public class GameController {
             Game game = gameService.createNewRemoteGame(newRemoteGame);
             if (game != null) {
                 invitationService.deleteInvitation(newRemoteGame.getRemotePlayer());
-                kafkaService.sendInvite(game.getId(),
-                        getSessionId(),
-                        newRemoteGame.getRemotePlayer(),
-                        game.getMovements().get(0).getNumber());
-
+                Invite invite = new Invite(game.getId(), getSessionId(), newRemoteGame.getRemotePlayer(), game.getMovements().get(0).getNumber());
+                kafkaService.sendInvite(invite);
             }
         }
         model.addAllAttributes(modelAttributesForMainPage());
