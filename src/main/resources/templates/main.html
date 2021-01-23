@@ -13,94 +13,160 @@
 
 <div class="container-fluid">
     <div class="container-md">
-        <h2>Players Looking for Games</h2>
-
-        <div th:if="${players.isEmpty()}">
-            <div class="container px-4">
-                No Players Available, send <a href="/game/remote"/>Announcement</a>
-            </div>
-        </div>
-        <div th:unless="${players.isEmpty()}">
-            <div class="row">
-                <table class="table table-hover table-striped" id="players">
-                    <thead>
-                    <tr>
-                        <th scope="col">PlayerName</th>
-                        <th scope="col">Start Value</th>
-                        <th scope="col"></th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <th:block th:each="player : ${players}">
-                        <tr>
-                            <form th:action="@{/game/remote/new}" th:object="${newRemoteGame}" method="post">
-                                <td th:text="${player.playerId}">...</td>
-                                <td>
-                                    <input type="text" pattern="^\d+$" class="form-control" th:field="*{startValue}">
-                                </td>
-                                <td>
-                                    <button type="submit" class="btn btn-primary">Invite</button>
-                                </td>
-                                <input type="hidden" th:value="${player.playerId}" name="remotePlayer" />
-                            </form>
-                        </tr>
-                    </th:block>
-                    </tbody>
-
-                </table>
-            </div>
-            send additional <a href="/game/remote"/>Announcements</a>
-        </div>
-        <a class="btn btn-outline-info" href="/" role="button">Refresh</a>
-
-        <h2>Running Games</h2>
-        <div class="row">
-            <table class="table table-hover table-striped" id="gamers">
-                <thead>
-                <tr>
-                    <th scope="col">Game Id</th>
-                    <th scope="col">Sequence number</th>
-                    <th scope="col">Value</th>
-                    <th scope="col">Last Step</th>
-                    <th scope="col">Status</th>
-                    <th scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                <th:block th:each="game : ${games}">
-                    <tr>
-
-                        <td th:text="${game.opponent}">...</td>
-                        <td th:text="${game.sequenceNumber}">...</td>
-                        <td th:text="${game.number}">...</td>
-                        <td th:text="${game.lastStep}">...</td>
-                        <td th:text="${game.status}">...</td>
-                        <td> <a th:href="${'/game/' + game.uuid}"/>Play</a></td>
-
-                    </tr>
-                </th:block>
-                </tbody>
-
-            </table>
-        </div>
-
-        <form th:action="@{/game/new}" th:object="${gameTemplate}" method="post">
-            <div class="form-row">
-                <div class="form-group col-md-3">
-                    <label>Start Value</label>
-                    <input type="text" pattern="^\d+$" class="form-control" th:field="*{startValue}"  th:errorclass="is-invalid" title="Field value has to be a number">
-                    <small th:errors="*{startValue}" id="startValueHelpBlock" class="form-text text-muted">
-                        Start Value for the Game
-                    </small>
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="jumbotron">
+                    <h1 class="display-4">Game of Three</h1>
+                    <p class="lead">
+                        The Goal is to implement a game with two independent units – the players – communicating with
+                        each other using an API.
+                    </p>
+                    <hr class="my-4">
+                    <p>Notify other players that you want to play, accept their invitations and play with them</p>
+                    <p class="lead">
+                        <a class="btn btn-outline-info" href="/" role="button">Refresh</a>
+                    </p>
                 </div>
-                <input type="hidden" th:value="${playerId}" name="playerId" />
             </div>
-            <button type="submit" class="btn btn-primary">Create</button>
-        </form>
+            <div class="col-12">
+                <div id="accordion">
+                    <div class="card">
+                        <div class="card-header" id="playerListHeading">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link" data-toggle="collapse" data-target="#playerList"
+                                        aria-expanded="false" aria-controls="playerListOne">
+                                    Available Player
+                                </button>
+                            </h5>
+                        </div>
 
+                        <div id="playerList" class="collapse show" aria-labelledby="playerListOne"
+                             data-parent="#accordion">
+                            <div class="card-body" th:if="${players.isEmpty()}">
+                                <h5 class="card-title">No Players Available</h5>
+                                <p class="card-text">You can send a notification to other players that you would like to
+                                    play</p>
+                                <a href="/game/remote" class="btn btn-primary">Send Announcement</a>
+                            </div>
+                            <div class="card-body" th:unless="${players.isEmpty()}">
+                                <table class="table table-hover table-striped" id="players">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">PlayerName</th>
+                                        <th scope="col">Start Value</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="player : ${players}">
+                                        <tr>
+                                            <form th:action="@{/game/remote/new}" th:object="${newRemoteGame}"
+                                                  method="post">
+                                                <td th:text="${player.playerId}">...</td>
+                                                <td>
+                                                    <input type="text" pattern="^\d+$" class="form-control"
+                                                           th:field="*{startValue}">
+                                                </td>
+                                                <td>
+                                                    <button type="submit" class="btn btn-primary">Invite</button>
+                                                </td>
+                                                <input type="hidden" th:value="${player.playerId}" name="remotePlayer"/>
+                                            </form>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                                <a href="/game/remote" class="btn btn-primary">Send Announcement</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="computerHeading">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link" data-toggle="collapse" data-target="#collapseComputer"
+                                        aria-expanded="false" aria-controls="collapseComputer">
+                                    Create Local Game against the Computer
+                                </button>
+                            </h5>
+                        </div>
+
+                        <div id="collapseComputer" class="collapse show" aria-labelledby="computerHeading"
+                             data-parent="#accordion">
+                            <div class="card-body">
+                                <h5 class="card-title">Computer Game</h5>
+                                <p class="card-text">You can create a Game with a Computer opponent</p>
+
+                                <form th:action="@{/game/new}" th:object="${gameTemplate}" method="post">
+                                    <div class="form-row">
+                                        <div class="form-group col-md-3">
+                                            <label>Start Value</label>
+                                            <input type="text" pattern="^\d+$" class="form-control"
+                                                   th:field="*{startValue}" th:errorclass="is-invalid"
+                                                   title="Field value has to be a number">
+                                            <small th:errors="*{startValue}" id="startValueHelpBlock"
+                                                   class="form-text text-muted">
+                                                Start Value for the Game
+                                            </small>
+                                        </div>
+                                        <input type="hidden" th:value="${playerId}" name="playerId"/>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Create Local Game</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header" id="headingGames">
+                            <h5 class="mb-0">
+                                <button class="btn btn-link collapsed" data-toggle="collapse"
+                                        data-target="#collapseGames" aria-expanded="false"
+                                        aria-controls="collapseGames">
+                                    Running Games
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseGames" class="collapse" aria-labelledby="headingGames"
+                             data-parent="#accordion">
+                            <div class="card-body" th:if="${games.isEmpty()}">
+                                <h5 class="card-title">No running games</h5>
+                                <p class="card-text">You can create a game against the computer</p>
+                            </div>
+                            <div class="card-body" th:unless="${games.isEmpty()}">
+                                <table class="table table-hover table-striped" id="gamers">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Game Id</th>
+                                        <th scope="col">Sequence number</th>
+                                        <th scope="col">Value</th>
+                                        <th scope="col">Last Step</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <th:block th:each="game : ${games}">
+                                        <tr>
+
+                                            <td th:text="${game.opponent}">...</td>
+                                            <td th:text="${game.sequenceNumber}">...</td>
+                                            <td th:text="${game.number}">...</td>
+                                            <td th:text="${game.lastStep}">...</td>
+                                            <td th:text="${game.status}">...</td>
+                                            <td><a th:href="${'/game/' + game.uuid}"/>Play</a></td>
+
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 </body>
 </html>
