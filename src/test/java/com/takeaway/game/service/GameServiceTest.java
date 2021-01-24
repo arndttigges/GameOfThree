@@ -1,7 +1,7 @@
 package com.takeaway.game.service;
 
+import com.takeaway.game.dto.DetailedGameView;
 import com.takeaway.game.dto.GameMove;
-import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.repository.model.*;
@@ -46,12 +46,12 @@ class GameServiceTest {
         Game game = GameFactory.createNewGame(Mode.LOCAL, PLAYER_A, PLAYER_B, PLAYER_A, START_VALUE);
         when(gameRepository.findById(any(UUID.class))).thenReturn(
                 Optional.of(game));
-        GameMovements gameMovements = gameService.fetchGame(game.getId());
+        DetailedGameView detailedGameView = gameService.fetchGame(game.getId());
 
         assertAll(
-                () -> assertEquals(game.getId(), gameMovements.getUuid()),
-                () -> assertEquals(Status.READY, gameMovements.getStatus()),
-                () -> assertEquals(1, gameMovements.getMovements().size())
+                () -> assertEquals(game.getId(), detailedGameView.getUuid()),
+                () -> assertEquals(Status.READY, detailedGameView.getStatus()),
+                () -> assertEquals(1, detailedGameView.getMovements().size())
         );
     }
 
@@ -67,7 +67,7 @@ class GameServiceTest {
         when(gameRepository.save(testGame)).thenReturn(testGame);
         when(requestAttributes.getSessionId()).thenReturn(PLAYER_A);
 
-        GameMovements movements = gameService.performMove(testGame, testMove);
+        DetailedGameView movements = gameService.performMove(testGame, testMove);
 
         assertAll(
                 () -> assertEquals(3, movements.getMovements().size()),
@@ -90,7 +90,7 @@ class GameServiceTest {
         when(gameRepository.save(testGame)).thenReturn(testGame);
         when(requestAttributes.getSessionId()).thenReturn(PLAYER_B);
 
-        GameMovements movements = gameService.performMove(testGame, testMove);
+        DetailedGameView movements = gameService.performMove(testGame, testMove);
 
         assertAll(
                 () -> assertEquals(2, movements.getMovements().size()),

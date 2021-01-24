@@ -1,7 +1,7 @@
 package com.takeaway.game.service;
 
+import com.takeaway.game.dto.DetailedGameView;
 import com.takeaway.game.dto.GameMove;
-import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameOverviewElement;
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.repository.GameRepository;
@@ -50,17 +50,17 @@ public class GameService {
         return gameRepository.findById(gameId);
     }
 
-    public GameMovements fetchGame(UUID gameId) {
+    public DetailedGameView fetchGame(UUID gameId) {
         Optional<Game> gameOptional = gameRepository.findById(gameId);
         return gameOptional.map(this::convertGame).orElse(null);
     }
 
-    public GameMovements performMove(UUID gameId, GameMove action) {
+    public DetailedGameView performMove(UUID gameId, GameMove action) {
         Game currentGame = gameRepository.findById(gameId).orElseThrow();
         return performMove(currentGame, action);
     }
 
-    public GameMovements performMove(Game currentGame, GameMove action) {
+    public DetailedGameView performMove(Game currentGame, GameMove action) {
         applyGameMove(currentGame, action);
         if (currentGame.getMode() == Mode.LOCAL) {
             GameMove computerMove = createComputerMove();
@@ -83,7 +83,7 @@ public class GameService {
         return move;
     }
 
-    private GameMovements convertGame(Game game) {
+    private DetailedGameView convertGame(Game game) {
         return GameFactory.createDetailedGameFromGame(game, getSessionId());
     }
 

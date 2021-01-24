@@ -6,7 +6,7 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class Move {
+public class DetailedGameViewTableElement {
 
     private final int sequenceNumber;
     private final Action myAction;

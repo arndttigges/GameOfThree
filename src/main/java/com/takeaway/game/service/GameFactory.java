@@ -1,8 +1,8 @@
 package com.takeaway.game.service;
 
-import com.takeaway.game.dto.GameMovements;
+import com.takeaway.game.dto.DetailedGameView;
+import com.takeaway.game.dto.DetailedGameViewTableElement;
 import com.takeaway.game.dto.GameOverviewElement;
-import com.takeaway.game.dto.Move;
 import com.takeaway.game.repository.model.Game;
 import com.takeaway.game.repository.model.Mode;
 import com.takeaway.game.repository.model.Movement;
@@ -39,19 +39,19 @@ public class GameFactory {
                             .status(determineGameStatus(game, userId))
                             .build();
                 })
-                .collect(Collectors.toList());
+               .collect(Collectors.toList());
     }
 
-    public static GameMovements createDetailedGameFromGame(Game game, String userId) {
-        List<Move> moves = game.getMovements()
+    public static DetailedGameView createDetailedGameFromGame(Game game, String userId) {
+        List<DetailedGameViewTableElement> detailedGameViewTableElements = game.getMovements()
                 .stream()
                 .map(movement -> convertMovementToMove(movement, userId))
                 .collect(Collectors.toList());
 
-        return GameMovements.builder()
+        return DetailedGameView.builder()
                 .uuid(game.getId())
                 .status(determineGameStatus(game, userId))
-                .movements(moves).build();
+                .movements(detailedGameViewTableElements).build();
     }
 
     private static Movement createFirstMove(int startValue, String player) {
@@ -62,12 +62,12 @@ public class GameFactory {
                 .build();
     }
 
-    private static Move convertMovementToMove(Movement movement, String userId) {
-        Move.MoveBuilder builder = Move.builder()
+    private static DetailedGameViewTableElement convertMovementToMove(Movement movement, String userId) {
+        DetailedGameViewTableElement.DetailedGameViewTableElementBuilder builder = DetailedGameViewTableElement.builder()
                 .sequenceNumber(movement.getMovementSequenzNumber())
                 .number(movement.getNumber());
-        if(movement.getPlayerId() != null) {
-            if(movement.getPlayerId().equals(userId)) {
+        if (movement.getPlayerId() != null) {
+            if (movement.getPlayerId().equals(userId)) {
                 builder.myAction(movement.getAction());
             } else {
                 builder.opponentAction(movement.getAction());

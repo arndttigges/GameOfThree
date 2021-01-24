@@ -82,7 +82,7 @@ public class GameController {
     String fetchGame(@PathVariable(name = "gameId") UUID gameId,
                      final Model model) {
 
-        GameMovements game = gameService.fetchGame(gameId);
+        DetailedGameView game = gameService.fetchGame(gameId);
         model.addAllAttributes(modelAttributesForGamePage(game));
 
         return "game";
@@ -99,9 +99,9 @@ public class GameController {
             model.addAttribute("playerId", getSessionId());
         } else {
             gameMove.setPlayerId(getSessionId());
-            GameMovements gameMovements = gameService.performMove(gameId, gameMove);
-            sendRemoteMove(gameMovements.getUuid());
-            model.addAllAttributes(modelAttributesForGamePage(gameMovements));
+            DetailedGameView detailedGameView = gameService.performMove(gameId, gameMove);
+            sendRemoteMove(detailedGameView.getUuid());
+            model.addAllAttributes(modelAttributesForGamePage(detailedGameView));
         }
 
         return "game";
@@ -132,15 +132,15 @@ public class GameController {
         );
     }
 
-    private Map<String, Object> modelAttributesForGamePage(GameMovements game) {
+    private Map<String, Object> modelAttributesForGamePage(DetailedGameView game) {
         HashMap<String, Object> map = new HashMap<>();
         map.put("playerId", getSessionId());
         map.put("gameMove", new GameMove());
         map.put("game", game);
 
         if (game.getStatus() == Status.FINISHED) {
-            Move move = game.getMovements().get(game.getMovements().size() - 1);
-            map.put("winner", move.getMyAction() == null ? "Opponent" : "You");
+            DetailedGameViewTableElement detailedGameViewTableElement = game.getMovements().get(game.getMovements().size() - 1);
+            map.put("winner", detailedGameViewTableElement.getMyAction() == null ? "Opponent" : "You");
         }
 
         return map;

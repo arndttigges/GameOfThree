@@ -9,10 +9,10 @@ import java.util.UUID;
 
 @Builder
 @Getter
-public class GameMovements {
+public class DetailedGameView {
 
     private final UUID uuid;
     private final Status status;
-    private final List<Move> movements;
+    private final List<DetailedGameViewTableElement> movements;
 
 }
