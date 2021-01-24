@@ -85,4 +85,4 @@ with it.
 * Maybe it would have been better to solve the identity via a login etc, but I didn't want to increase the complexity
   even more
 * GUI tests are missing and the GameControllerTest needs more verifications of the responses.
-
+* The user interface is not secured (login, CRSF, ..)
