@@ -3,8 +3,8 @@ package com.takeaway.game.service;
 import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameTemplate;
-import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
+import com.takeaway.game.repository.model.*;
 import com.takeaway.game.rule.RuleEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -158,7 +158,7 @@ class GameServiceTest {
 
         verify(gameRepository).findById(testGame.getId());
         verify(gameRepository, times(0)).save(any(Game.class));
-        verify(requestAttributes, times(0));
+        verify(requestAttributes, times(0)).getSessionId();
     }
 
     private Movement createTestMovement() {

@@ -2,7 +2,7 @@
 
 This program is implementing the coding challenge from takeaway.com
 
-# Prerequirements
+# Pre Requirements
 
 you need:
 
@@ -17,7 +17,7 @@ The programm can be build with following command:
 mvn clean verify
 ```
 
-## running the programm
+## Running the Programm
 
 ### Kafka
 
@@ -72,11 +72,17 @@ with it.
   the minus point
 * the Kafka settings are very simple and guaranteed not optimal
 * Kafka messages do not have any authentication etc. The identification is done via the gameId
+* I have a consistency problem getting and creating games from other players. I think there are good solutions for this,
+  possibly with the callbacks. But I have little experience and have decided for the naive variant to solve the
+  problem. (delete it again)
+* i do not test kafka in a test directly. a ct test should be added.
 
 ## GUI
 
 * To keep the handling as simple as possible I used the SessionId as user identification. This has the consequence that
   you have to use 2 browsers or a browser in incognito mode for 2 instances on one computer. Otherwise the game gets
   confused
-
+* Maybe it would have been better to solve the identity via a login etc, but I didn't want to increase the complexity
+  even more
+* GUI tests are missing and the GameControllerTest needs more verifications of the responses.
 

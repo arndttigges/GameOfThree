@@ -1,6 +1,6 @@
 package com.takeaway.game.repository;
 
-import com.takeaway.game.model.Game;
+import com.takeaway.game.repository.model.Game;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

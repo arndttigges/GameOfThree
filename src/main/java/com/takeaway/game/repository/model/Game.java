@@ -1,4 +1,4 @@
-package com.takeaway.game.model;
+package com.takeaway.game.repository.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;

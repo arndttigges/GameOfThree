@@ -1,7 +1,6 @@
-package com.takeaway.game.model;
+package com.takeaway.game.repository.model;
 
 import com.takeaway.game.dto.GameOverviewElement;
-import com.takeaway.game.dto.Move;
 import com.takeaway.game.service.GameFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,7 +9,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.lenient;
 
 class GameFactoryTest {
 

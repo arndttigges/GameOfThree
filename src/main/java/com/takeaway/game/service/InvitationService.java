@@ -1,7 +1,7 @@
 package com.takeaway.game.service;
 
-import com.takeaway.game.model.Invitation;
 import com.takeaway.game.repository.InvitationRepository;
+import com.takeaway.game.repository.model.Invitation;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;

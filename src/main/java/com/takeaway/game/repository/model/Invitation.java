@@ -1,4 +1,4 @@
-package com.takeaway.game.model;
+package com.takeaway.game.repository.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

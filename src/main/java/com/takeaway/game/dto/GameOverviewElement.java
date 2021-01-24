@@ -1,7 +1,7 @@
 package com.takeaway.game.dto;
 
-import com.takeaway.game.model.Action;
-import com.takeaway.game.model.Status;
+import com.takeaway.game.repository.model.Action;
+import com.takeaway.game.repository.model.Status;
 import lombok.Builder;
 import lombok.Getter;
 

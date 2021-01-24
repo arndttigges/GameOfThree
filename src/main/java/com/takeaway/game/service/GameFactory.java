@@ -3,7 +3,10 @@ package com.takeaway.game.service;
 import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameOverviewElement;
 import com.takeaway.game.dto.Move;
-import com.takeaway.game.model.*;
+import com.takeaway.game.repository.model.Game;
+import com.takeaway.game.repository.model.Mode;
+import com.takeaway.game.repository.model.Movement;
+import com.takeaway.game.repository.model.Status;
 
 import java.util.LinkedList;
 import java.util.List;
