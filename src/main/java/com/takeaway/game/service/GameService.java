@@ -14,10 +14,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -27,7 +24,26 @@ public class GameService {
     private final RuleEngine ruleEngine;
 
     public List<GameOverviewElement> getAllRunningGames() {
-        return GameFactory.convertToGameView(gameRepository.findAll(), getSessionId());
+
+        List<Game> games = gameRepository.findAll();
+        List<Game> filteredAndValidGames = filterAndDeleteInvalidGames(games);
+        return GameFactory.convertToGameView(filteredAndValidGames, getSessionId());
+    }
+
+    private List<Game> filterAndDeleteInvalidGames(List<Game> games) {
+        List<Game> myGames = new ArrayList<>();
+        List<Game> invalidGames = new ArrayList<>();
+
+        String me = getSessionId();
+        for (Game game : games) {
+            if (me.equals(game.getPlayerId()) || me.equals(game.getOpponentId())) {
+                myGames.add(game);
+            } else {
+                invalidGames.add(game);
+            }
+        }
+        gameRepository.deleteAll(invalidGames);
+        return myGames;
     }
 
     public Optional<Game> getGameByUUID(UUID gameId) {

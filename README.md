@@ -39,3 +39,44 @@ and start it via console:
 ```shell
 mvn spring-boot:run
 ```
+
+# How To Play
+
+## Create a Game
+
+We have two options: remote and local
+
+### Local Mode
+
+Start a local game using the "Create Local Game against the Computer" section. Choose a starting number and click on "
+Create Local Game" The game will then be listed under "Running Games"
+
+### Remote Game
+
+If you want to participate in a remote game, you can send a message that you are ready to play or you can reply to a
+message from another player. Announcements from other players can be found under "Available Player" and remote games
+under "Running Games".
+
+Have Fun
+
+# Misc
+
+In the following I have several thoughts / notes on the implementation:
+
+## Kafka
+
+I have never set up Kafka before and used it very little. However, I found it interesting to solve the coding challenge
+with it.
+
+* I had problems with the conversion of the Kafka messages to my DTOs. After some time I had given up and hereby accept
+  the minus point
+* the Kafka settings are very simple and guaranteed not optimal
+* Kafka messages do not have any authentication etc. The identification is done via the gameId
+
+## GUI
+
+* To keep the handling as simple as possible I used the SessionId as user identification. This has the consequence that
+  you have to use 2 browsers or a browser in incognito mode for 2 instances on one computer. Otherwise the game gets
+  confused
+
+
