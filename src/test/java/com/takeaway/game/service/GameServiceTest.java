@@ -2,6 +2,7 @@ package com.takeaway.game.service;
 
 import com.takeaway.game.dto.DetailedGameView;
 import com.takeaway.game.dto.GameMove;
+import com.takeaway.game.dto.GameOverviewElement;
 import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.repository.model.*;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -159,6 +161,45 @@ class GameServiceTest {
         verify(gameRepository).findById(testGame.getId());
         verify(gameRepository, times(0)).save(any(Game.class));
         verify(requestAttributes, times(0)).getSessionId();
+    }
+
+    @Test
+    void showAllValidGames() {
+        List<Game> games = List.of(
+                GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE),
+                GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, PLAYER_A, PLAYER_B, START_VALUE),
+                GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, PLAYER_B, START_VALUE),
+                GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, PLAYER_B, PLAYER_A, START_VALUE)
+        );
+
+        when(requestAttributes.getSessionId()).thenReturn(PLAYER_A);
+        when(gameRepository.findAll()).thenReturn(games);
+
+        List<GameOverviewElement> elements = gameService.getAllRunningGames();
+        assertEquals(4, elements.size());
+
+        verify(requestAttributes, atLeastOnce()).getSessionId();
+        verify(gameRepository).findAll();
+    }
+
+    @Test
+    void filterInvalidGames() {
+        String unknownPlayer = "C";
+        List<Game> games = List.of(
+                GameFactory.createNewGame(Mode.REMOTE, unknownPlayer, PLAYER_A, PLAYER_A, START_VALUE),
+                GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, unknownPlayer, PLAYER_B, START_VALUE),
+                GameFactory.createNewGame(Mode.REMOTE, PLAYER_A, unknownPlayer, PLAYER_B, START_VALUE),
+                GameFactory.createNewGame(Mode.REMOTE, unknownPlayer, unknownPlayer, unknownPlayer, START_VALUE)
+        );
+
+        when(requestAttributes.getSessionId()).thenReturn(PLAYER_A);
+        when(gameRepository.findAll()).thenReturn(games);
+
+        List<GameOverviewElement> elements = gameService.getAllRunningGames();
+        assertEquals(2, elements.size());
+
+        verify(requestAttributes, atLeastOnce()).getSessionId();
+        verify(gameRepository).findAll();
     }
 
     private Movement createTestMovement() {
