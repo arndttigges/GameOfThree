@@ -3,7 +3,6 @@ package com.takeaway.game.service;
 import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.dto.GameMovements;
 import com.takeaway.game.dto.GameTemplate;
-import com.takeaway.game.dto.NewRemoteGame;
 import com.takeaway.game.model.*;
 import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.rule.RuleEngine;
@@ -122,8 +121,7 @@ class GameServiceTest {
     void createAValidNewRemoteGame() {
         when(gameRepository.save(any(Game.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        NewRemoteGame game = new NewRemoteGame(START_VALUE, PLAYER_A);
-        Game result = gameService.createNewRemoteGame(game);
+        Game result = gameService.createNewRemoteGame(UUID.randomUUID(), PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
 
         assertAll(
                 () -> assertEquals(Mode.REMOTE, result.getMode()),
@@ -132,6 +130,34 @@ class GameServiceTest {
         );
 
         verify(gameRepository).save(any(Game.class));
+    }
+
+    @Test
+    void performRemoteMove() {
+        Game testGame = GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
+        GameMove testMove = new GameMove();
+        testMove.setPlayerId(PLAYER_B);
+        testMove.setAction(Action.ZERO);
+
+        when(gameRepository.findById(testGame.getId())).thenReturn(Optional.of(testGame));
+        gameService.performRemoteMove(testGame.getId(), 2, testMove);
+
+        verify(gameRepository).findById(testGame.getId());
+        verify(gameRepository).save(any(Game.class));
+    }
+
+    @Test
+    void doNotPerformMoveWhenSequenzNumberIsAlreadyThere() {
+        Game testGame = GameFactory.createNewGame(Mode.REMOTE, PLAYER_B, PLAYER_A, PLAYER_A, START_VALUE);
+        GameMove testMove = new GameMove();
+        testMove.setPlayerId(PLAYER_B);
+        testMove.setAction(Action.ZERO);
+
+        when(gameRepository.findById(testGame.getId())).thenReturn(Optional.of(testGame));
+        gameService.performRemoteMove(testGame.getId(), 1, testMove);
+
+        verify(gameRepository).findById(testGame.getId());
+        verify(gameRepository, times(0)).save(any(Game.class));
     }
 
     private Movement createTestMovement() {

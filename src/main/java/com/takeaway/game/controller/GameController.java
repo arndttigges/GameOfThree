@@ -68,7 +68,7 @@ public class GameController {
                                 final Model model) {
 
         if (!bindingResult.hasErrors()) {
-            Game game = gameService.createNewRemoteGame(newRemoteGame);
+            Game game = gameService.createNewRemoteGame(UUID.randomUUID(), getSessionId(), newRemoteGame.getRemotePlayer(), getSessionId(), newRemoteGame.getStartValue());
             if (game != null) {
                 invitationService.deleteInvitation(newRemoteGame.getRemotePlayer());
                 Invite invite = new Invite(game.getId(), getSessionId(), newRemoteGame.getRemotePlayer(), game.getMovements().get(0).getNumber());

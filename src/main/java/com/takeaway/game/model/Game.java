@@ -1,26 +1,28 @@
 package com.takeaway.game.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.*;
-import org.springframework.transaction.annotation.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 
 import static javax.persistence.CascadeType.ALL;
 
 @Entity
-@Setter
-@Getter
-@ToString
-@EqualsAndHashCode(of = "id")
+@Data
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Transactional
 public class Game implements Serializable {
     @Id
     UUID id;

@@ -1,6 +1,9 @@
 package com.takeaway.game.service;
 
-import com.takeaway.game.dto.*;
+import com.takeaway.game.dto.GameMove;
+import com.takeaway.game.dto.GameMovements;
+import com.takeaway.game.dto.GameOverviewElement;
+import com.takeaway.game.dto.GameTemplate;
 import com.takeaway.game.model.Action;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Mode;
@@ -83,9 +86,19 @@ public class GameService {
         return RequestContextHolder.currentRequestAttributes().getSessionId();
     }
 
-    public Game createNewRemoteGame(NewRemoteGame newRemoteGame) {
-        int startValue = newRemoteGame.getStartValue();
-        Game initRemoteGame = GameFactory.createNewGame(Mode.REMOTE, getSessionId(), newRemoteGame.getRemotePlayer(), getSessionId(), startValue);
+    public Game createNewRemoteGame(UUID gameID, String lokalPlayer, String remotePlayer, String initiator, int value) {
+        Game initRemoteGame = GameFactory.createNewGame(Mode.REMOTE, lokalPlayer, remotePlayer, initiator, value);
+        initRemoteGame.setId(gameID);
         return gameRepository.save(initRemoteGame);
+    }
+
+    public void performRemoteMove(UUID gameId, int sequenceNumber, GameMove gameMove) {
+        gameRepository.findById(gameId)
+                .ifPresent(game -> {
+                    if (game.getMovements().get(game.getMovements().size() - 1).getMovementSequenzNumber() != sequenceNumber) {
+                        applyGameMove(game, gameMove);
+                        gameRepository.save(game);
+                    }
+                });
     }
 }

@@ -2,17 +2,15 @@ package com.takeaway.game.kafka;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.kafka.dto.Invite;
 import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.Action;
-import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Invitation;
-import com.takeaway.game.model.Mode;
-import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.repository.InvitationRepository;
 import com.takeaway.game.rule.RuleEngine;
-import com.takeaway.game.service.GameFactory;
+import com.takeaway.game.service.GameService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +18,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.takeaway.game.kafka.KafkaService.*;
@@ -41,7 +38,7 @@ class KafkaServiceTest {
     private InvitationRepository invitationRepository;
 
     @Mock
-    private GameRepository gameRepository;
+    private GameService gameService;
 
     @Mock
     private RuleEngine ruleEngine;
@@ -52,7 +49,7 @@ class KafkaServiceTest {
 
     @BeforeEach
     void init() {
-        kafkaService = new KafkaService(kafkaTemplate, invitationRepository, gameRepository, ruleEngine, mapper);
+        kafkaService = new KafkaService(kafkaTemplate, invitationRepository, gameService, ruleEngine, mapper);
     }
 
     @Test
@@ -90,35 +87,17 @@ class KafkaServiceTest {
 
     @Test
     void saveReceivedInvitation() throws JsonProcessingException {
-        kafkaService.listenToInvites(mapper.writeValueAsString(new Invite(UUID.randomUUID(), LOCAL_PLAYER_ID, REMOTE_PLAYER_ID, START_VALUE)));
-        verify(gameRepository).save(any(Game.class));
+        UUID uuid = UUID.randomUUID();
+        kafkaService.listenToInvites(mapper.writeValueAsString(new Invite(uuid, REMOTE_PLAYER_ID, LOCAL_PLAYER_ID, START_VALUE)));
+        verify(gameService).createNewRemoteGame(uuid, LOCAL_PLAYER_ID, REMOTE_PLAYER_ID, REMOTE_PLAYER_ID, START_VALUE);
     }
 
     @Test
     void saveReceivedGameMove() throws JsonProcessingException {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, LOCAL_PLAYER_ID, REMOTE_PLAYER_ID, LOCAL_PLAYER_ID, START_VALUE);
+        RemoteMove move = new RemoteMove(UUID.randomUUID(), Action.ZERO, 2, LOCAL_PLAYER_ID);
+        kafkaService.listenToMoves(mapper.writeValueAsString(move));
 
-        when(gameRepository.findById(game.getId())).thenReturn(Optional.of(game));
-        kafkaService.listenToMoves(mapper.writeValueAsString(new RemoteMove(game.getId(), Action.ZERO, 2, LOCAL_PLAYER_ID)));
-        verify(gameRepository).save(any(Game.class));
-    }
-
-    @Test
-    void doNotSaveReceivedGameMoveWhenSequenceNumberIsToLow() throws JsonProcessingException {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, LOCAL_PLAYER_ID, REMOTE_PLAYER_ID, LOCAL_PLAYER_ID, START_VALUE);
-
-        when(gameRepository.findById(game.getId())).thenReturn(Optional.of(game));
-        kafkaService.listenToMoves(mapper.writeValueAsString(new RemoteMove(game.getId(), Action.ZERO, 1, LOCAL_PLAYER_ID)));
-        verify(gameRepository, times(0)).save(any(Game.class));
-    }
-
-    @Test
-    void doNotSaveReceivedGameMoveWhenGameNotSaved() throws JsonProcessingException {
-        Game game = GameFactory.createNewGame(Mode.REMOTE, LOCAL_PLAYER_ID, REMOTE_PLAYER_ID, LOCAL_PLAYER_ID, START_VALUE);
-
-        when(gameRepository.findById(game.getId())).thenReturn(Optional.empty());
-        kafkaService.listenToMoves(mapper.writeValueAsString(new RemoteMove(game.getId(), Action.ZERO, 1, LOCAL_PLAYER_ID)));
-        verify(gameRepository, times(0)).save(any(Game.class));
+        verify(gameService).performRemoteMove(eq(move.getGameId()), eq(move.getSequenceNumber()), any(GameMove.class));
     }
 
 }

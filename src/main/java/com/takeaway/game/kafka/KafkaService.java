@@ -6,13 +6,10 @@ import com.takeaway.game.dto.GameMove;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.kafka.dto.Invite;
 import com.takeaway.game.kafka.dto.RemoteMove;
-import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Invitation;
-import com.takeaway.game.model.Mode;
-import com.takeaway.game.repository.GameRepository;
 import com.takeaway.game.repository.InvitationRepository;
 import com.takeaway.game.rule.RuleEngine;
-import com.takeaway.game.service.GameFactory;
+import com.takeaway.game.service.GameService;
 import lombok.AllArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -29,7 +26,7 @@ public class KafkaService {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private final InvitationRepository invitationRepository;
-    private final GameRepository gameRepository;
+    private final GameService gameService;
     private final RuleEngine ruleEngine;
 
     private final ObjectMapper mapper;
@@ -57,28 +54,16 @@ public class KafkaService {
     @KafkaListener(topics = "INVITE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
     public void listenToInvites(String inviteString) throws JsonProcessingException {
         Invite invite = mapper.readValue(inviteString, Invite.class);
-
-        Game game = GameFactory.createNewGame(
-                Mode.REMOTE, invite.getOpponentId(), invite.getPlayerId(), invite.getPlayerId(), invite.getStartValue());
-        game.setId(invite.getGameId());
-        gameRepository.save(game);
+        gameService.createNewRemoteGame(invite.getGameId(), invite.getOpponentId(), invite.getPlayerId(), invite.getPlayerId(), invite.getStartValue());
     }
 
     @KafkaListener(topics = "MOVE", groupId = "#{T(java.util.UUID).randomUUID().toString()}")
     public void listenToMoves(String moveString) throws JsonProcessingException {
         RemoteMove move = mapper.readValue(moveString, RemoteMove.class);
 
-        gameRepository.findById(move.getGameId())
-                .ifPresent(game -> {
-                    if (game.getMovements().get(game.getMovements().size() - 1).getMovementSequenzNumber() != move.getSequenceNumber()) {
-                        GameMove gameMove = new GameMove();
-                        gameMove.setAction(move.getAction());
-                        gameMove.setPlayerId(move.getPlayerId());
-                        ruleEngine.executeMove(game, gameMove).ifPresent(
-                                movement -> game.getMovements().add(movement)
-                        );
-                        gameRepository.save(game);
-                    }
-        });
+        GameMove gameMove = new GameMove();
+        gameMove.setAction(move.getAction());
+        gameMove.setPlayerId(move.getPlayerId());
+        gameService.performRemoteMove(move.getGameId(), move.getSequenceNumber(), gameMove);
     }
 }
