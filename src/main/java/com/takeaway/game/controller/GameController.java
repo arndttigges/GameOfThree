@@ -1,9 +1,6 @@
 package com.takeaway.game.controller;
 
-import com.takeaway.game.dto.GameMove;
-import com.takeaway.game.dto.GameMovements;
-import com.takeaway.game.dto.GameTemplate;
-import com.takeaway.game.dto.NewRemoteGame;
+import com.takeaway.game.dto.*;
 import com.takeaway.game.kafka.KafkaService;
 import com.takeaway.game.kafka.dto.Announcement;
 import com.takeaway.game.kafka.dto.Invite;
@@ -11,6 +8,7 @@ import com.takeaway.game.kafka.dto.RemoteMove;
 import com.takeaway.game.model.Game;
 import com.takeaway.game.model.Mode;
 import com.takeaway.game.model.Movement;
+import com.takeaway.game.model.Status;
 import com.takeaway.game.service.GameService;
 import com.takeaway.game.service.InvitationService;
 import lombok.AllArgsConstructor;
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.context.request.RequestContextHolder;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -83,12 +82,11 @@ public class GameController {
     String fetchGame(@PathVariable(name = "gameId") UUID gameId,
                      final Model model) {
 
-        model.addAttribute("game", gameService.fetchGame(gameId));
-        model.addAttribute("playerId", getSessionId());
-        model.addAttribute("gameMove", new GameMove());
+        GameMovements game = gameService.fetchGame(gameId);
+        model.addAllAttributes(modelAttributesForGamePage(game));
+
         return "game";
     }
-
 
     @PostMapping("/game/{gameId}")
     String play(@PathVariable(name = "gameId") UUID gameId,
@@ -103,9 +101,7 @@ public class GameController {
             gameMove.setPlayerId(getSessionId());
             GameMovements gameMovements = gameService.performMove(gameId, gameMove);
             sendRemoteMove(gameMovements.getUuid());
-            model.addAttribute("game", gameMovements);
-            model.addAttribute("playerId", getSessionId());
-            model.addAttribute("gameMove", new GameMove());
+            model.addAllAttributes(modelAttributesForGamePage(gameMovements));
         }
 
         return "game";
@@ -134,6 +130,20 @@ public class GameController {
                 "games", gameService.getAllRunningGames(),
                 "players", invitationService.getInvitations()
         );
+    }
+
+    private Map<String, Object> modelAttributesForGamePage(GameMovements game) {
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("playerId", getSessionId());
+        map.put("gameMove", new GameMove());
+        map.put("game", game);
+
+        if (game.getStatus() == Status.FINISHED) {
+            Move move = game.getMovements().get(game.getMovements().size() - 1);
+            map.put("winner", move.getMyAction() == null ? "Opponent" : "You");
+        }
+
+        return map;
     }
 
     private String getSessionId() {

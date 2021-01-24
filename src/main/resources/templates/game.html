@@ -25,7 +25,7 @@
                 </div>
                 <div class="col">
                     <div class="p-3 border bg-light">Winner:
-                        <span>the Bank></span>
+                        <span th:text="${winner}">the Bank></span>
                     </div>
                 </div>
             </div>
@@ -90,7 +90,8 @@
                     </div>
                 </div>
                 <div class="col-3">
-                    <a class="btn btn-outline-info" th:href="@{/game/__${game.uuid}__}" role="button">refresh page</a>
+                    <a class="btn btn-outline-info" th:href="@{/game/__${game.uuid.toString()}__}" role="button">refresh
+                        page</a>
                 </div>
             </div>
         </div>

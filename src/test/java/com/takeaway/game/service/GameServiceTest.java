@@ -158,6 +158,7 @@ class GameServiceTest {
 
         verify(gameRepository).findById(testGame.getId());
         verify(gameRepository, times(0)).save(any(Game.class));
+        verify(requestAttributes, times(0));
     }
 
     private Movement createTestMovement() {
