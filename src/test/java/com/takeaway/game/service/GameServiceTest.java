@@ -200,6 +200,7 @@ class GameServiceTest {
 
         verify(requestAttributes, atLeastOnce()).getSessionId();
         verify(gameRepository).findAll();
+        verify(gameRepository).deleteAll(anyIterable());
     }
 
     private Movement createTestMovement() {
