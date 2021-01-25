@@ -71,11 +71,11 @@ with it.
 * I had problems with the conversion of the Kafka messages to my DTOs. After some time I had given up and hereby accept
   the minus point
 * the Kafka settings are very simple and guaranteed not optimal
-* Kafka messages do not have any authentication etc. The identification is done via the gameId
+* Kafka messages do not have any encryption etc. The identification is done via the gameId
 * I have a consistency problem getting and creating games from other players. I think there are good solutions for this,
   possibly with the callbacks. But I have little experience and have decided for the naive variant to solve the
   problem. (delete it again)
-* i do not test kafka in a test directly. a ct test should be added.
+* i do not test kafka in a test directly. a ct test could be added.
 
 ## GUI
 
@@ -86,3 +86,4 @@ with it.
   even more
 * GUI tests are missing and the GameControllerTest needs more verifications of the responses.
 * The user interface is not secured (login, CRSF, ..)
+* for the user experience: adding a name would be good
